@@ -25,28 +25,28 @@ module.exports = {
                 keyString += `${count++}. **${key}**\n`;
             });
             if (message.channel.id === gameData.gameRooms[1]) {
-                await gameModel.findOneAndUpdate(
+                const respone = await gameModel.findOneAndUpdate(
                     {
                         serverId: message.guild.id,
                     },
                     {
                         $set: {
-                            blueTeamKeywords: keyArray
+                            blueTeamKeywords: keyArray,
                         },
                     },
                 );
             }
             if (message.channel.id === gameData.gameRooms[2]) {
-                await gameModel.findOneAndUpdate(
+                const respone = await gameModel.findOneAndUpdate(
                     {
-                        serverID: message.guild.id
+                        serverId: message.guild.id,
                     },
                     {
                         $set: {
-                            redTeamKeywords: keyArray
-                        }
-                    }
-                )
+                            redTeamKeywords: keyArray,
+                        },
+                    },
+                );
             }
             
             const keyEmbed = new Discord.MessageEmbed()
@@ -62,21 +62,33 @@ module.exports = {
                 );
             return message.channel.send(keyEmbed);
         }
-
-        const codeEmbed = new Discord.MessageEmbed()
+            
+        if(cmd.startsWith('code') || args[0].startsWith('code')) {
+            const codeArray = drawCard(gameData.codes, 3);
+            const respone = await gameModel.findOneAndUpdate(
+                {
+                    serverId: message.guild.id,
+                },
+                {
+                    $set: {
+                        curCodes: codeArray,
+                    },
+                },
+            );
+            const codeEmbed = new Discord.MessageEmbed()
                 .setColor('#e42643')
                 .setTitle('Codes')
                 .addFields(
                     { name: '\u200B', value: '\u200B' },
-                    { name: `Game ${gameData.curGames}`, value: `${drawCard(gameData.codes, 3).join(', ')}` },
+                    { name: `Game ${gameData.curGames}`, value: `${codeArray.join(', ')}` },
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
                     `All works made with ❤️ by ${bot.config.author}`,
                 );
-            
-        if(cmd.startsWith('code') || args[0].startsWith('code'))
             return message.author.send(codeEmbed)
+        }
+            
        
     },
 };

@@ -8,6 +8,7 @@ const playerSchema = new mongoose.Schema({
     coins: { type: Number, default: 100 },
     bank: { type: Number, default: 0 },
     onGame: { type: Boolean, default: false },
+    team: { type: String, default: '' },
     total_Games: { type: Number, default: 0 },
     wins: { type: Number, default: 0 },
     loses: { type: Number, default: 0 },

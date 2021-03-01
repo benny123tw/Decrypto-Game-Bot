@@ -1,6 +1,8 @@
 const chalk = require('chalk');
 const playerDB = require('../../functions/playerDB');
 const decryptoDB = require('../../functions/serverDB');
+const gameDB = require('../../functions/gameDB');
+const gameModel = require('../../models/gameSchema');
 
 module.exports = async (bot, Discord, logger, message) => {
     /**
