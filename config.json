@@ -1,0 +1,20 @@
+{
+  "bots": [
+    {
+      "name": "Decrypto",
+      "token": "TOKEN_DCT",
+      "tag": "[DCT]",
+      "prefix": "$",
+      "author": "Benny Yen",
+      "version": "0.8.5"
+    },
+    {
+      "name": "TestBot",
+      "token": "TOKEN_TEST",
+      "tag": "[TEST]",
+      "prefix": "~",
+      "author": "Benny Yen",
+      "version": "0.0.1"
+    }
+  ]
+}
