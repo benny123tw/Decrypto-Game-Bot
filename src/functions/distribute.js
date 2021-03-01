@@ -146,11 +146,40 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                     mReaction.message.guild.members.cache.get(user).roles.add(blueTeamRole);    
                     blueTeam.push(mReaction.message.guild.members.cache.get(user).user.username);
                 });
+
                 leftSide.forEach(user => {
                     mReaction.message.guild.members.cache.get(user).roles.add(redTeamRole);    
-                    redTeam.push(mReaction.message.guild.members.cache.get(user).user.username);                  
+                    redTeam.push(mReaction.message.guild.members.cache.get(user).user.username);      
                 });
                 
+                arr.forEach(async user => {
+                    const respone = await playerModel.findOneAndUpdate(
+                        {
+                            playerId: user,
+                        },
+                        {
+                            $set: {
+                                team: 'BLUE',
+                                onGame: true,
+                            },
+                        },
+                    );
+                });
+
+                leftSide.forEach(async user => {
+                    const respone = await playerModel.findOneAndUpdate(
+                        {
+                            playerId: user,
+                        },
+                        {
+                            $set: {
+                                team: 'RED',
+                                onGame: true,
+                            },
+                        },
+                    );
+                });
+
                 const newEmbed = new Discord.MessageEmbed()
                 .setColor('#e42643')
                 .setTitle('Final Result')
@@ -294,6 +323,7 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData ) =
                 },
                 {
                     $set: {
+                        team: 'BLUE',
                         onGame: true,
                     },
                 },
@@ -307,6 +337,7 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData ) =
                 },
                 {
                     $set: {
+                        team: 'RED',
                         onGame: true,
                     },
                 },
