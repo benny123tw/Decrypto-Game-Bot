@@ -17,6 +17,18 @@ module.exports = {
             .then(result => (gameData = result))
             .catch(err => console.log(err));
 
+        await gameModel.findOneAndUpdate(
+            {
+                serverId: message.guild.id,
+            },
+            {
+                $set: {
+                    onGame: true,
+                    curGame: 1,
+                },
+            },
+        );
+
         /**
          * fetch all the roles in the server
          * and check if they have the same roles as DB
@@ -179,7 +191,7 @@ module.exports = {
         if (args[0] === 'random')
             distribute.randomDistribute({ message, args, cmd, bot, logger, Discord }, gameData);
         if (!args[0] || !isNaN(args[0]))
-            distribute.distribute({ message, args, cmd, bot, logger, Discord }, gameData);
+            distribute.normal({ message, args, cmd, bot, logger, Discord }, gameData);
         // distribute.test({ message, args, cmd, bot, logger, Discord }, gameData);
         
         

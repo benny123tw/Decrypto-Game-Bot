@@ -1,3 +1,5 @@
+const playerModel = require('../models/playerSchema');
+
 /**
  * shuffle the array using random pointer
  * @param {Array} array 
@@ -48,6 +50,8 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
     const reactionFilter = (reaction, user) => reaction.emoji.name === '🤣';
     const blueTeamRole = gameData.gameRoles[0];
     const redTeamRole = gameData.gameRoles[1];
+    const blueTeamEmoji = '🔹';
+    const redTeamEmoji = '🔸';
 
     // join embed settings
     const joinEmbed = new Discord.MessageEmbed()
@@ -147,115 +151,22 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                     redTeam.push(mReaction.message.guild.members.cache.get(user).user.username);                  
                 });
                 
-                message.channel.send(`Team Blue \n${blueTeam.join('\n')}`);
-                message.channel.send(`Team Red \n${redTeam.join('\n')}`);
+                const newEmbed = new Discord.MessageEmbed()
+                .setColor('#e42643')
+                .setTitle('Final Result')
+                .addFields(
+                    { name: `${blueTeamEmoji} Blue Team`, value: `${blueTeam.join('\n') || `none`}` },
+                    { name: `${redTeamEmoji} Red Team`, value: `${redTeam.join('\n') || `none`}` },
+                    { name: '\u200B', value: '\u200B' },
+                )
+                .setFooter(
+                    `All works made with ❤️ by ${bot.config.author}`,
+                );
+                message.channel.send(newEmbed);
             });
         })
 
         
-}
-
-const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData ) => {
-    const blueTeamRole = gameData.gameRoles[0];
-    const redTeamRole = gameData.gameRoles[1];
-
-    const blueTeamEmoji = '😄';
-    const redTeamEmoji = '😠';
-
-    const joinEmbed = new Discord.MessageEmbed()
-    .setColor('#e42643')
-    .setTitle('React to join!')
-    .setDescription(`\n\n${blueTeamEmoji} for blue team\n` 
-            + `${redTeamEmoji} for red team`)
-    .addFields(
-        { name: `參與人數 ${args[0]} 位`, value: `none`, inline: false },
-        { name: '\u200B', value: '\u200B' },
-    )
-    .setFooter(
-        `All works made with ❤️ by ${bot.config.author}`,
-    );
-
-    message.channel.send(joinEmbed)
-        .then(async msg => {
-            await msg.react(blueTeamEmoji)
-            await msg.react(redTeamEmoji)
-            // console.log(msg.reactions.cache)
-            const twoReactionFilter = (reaction, user) => reaction.emoji.name = redTeamEmoji || blueTeamEmoji;
-                const twoCollector = msg
-                .createReactionCollector(twoReactionFilter, {
-                    max: args[1],
-                    dispose: true
-                    });
-
-                twoCollector.on('collect', reaction => {
-                    let embedLikeField = Object.assign({}, joinEmbed.fields[0]);
-                    console.log(msg.reactions.cache.users.cache.filter(user => !user.bot)
-                    .map(user => user.username))
-                    embedLikeField.value = msg.reactions.cache.users.cache.filter(user => !user.bot)
-                        .map(user => user.username);
-
-                    // new embed join the new likefield
-                    const newEmbed = new Discord.MessageEmbed()
-                    .setColor('#e42643')
-                    .setTitle('React to join!')
-                    .setDescription(`\n\n${blueTeamEmoji} for blue team\n` 
-                    + `${redTeamEmoji} for red team`)
-                    .addFields(
-                        embedLikeField,
-                        { name: '\u200B', value: '\u200B' },
-                    )
-                    .setFooter(
-                        `All works made with ❤️ by ${bot.config.author}`,
-                    );
-                    reaction.message.edit(newEmbed);                        
-                })
-
-                twoCollector.on('remove', reaction => {
-                    let embedLikeField = Object.assign({}, joinEmbed.fields[0]);
-                    console.log(msg.reactions.cache.users.cache.filter(user => !user.bot)
-                    .map(user => user.username))
-                    embedLikeField.value = msg.reactions.cache.users.cache.filter(user => !user.bot)
-                        .map(user => user.username);
-
-                    // new embed join the new likefield
-                    const newEmbed = new Discord.MessageEmbed()
-                    .setColor('#e42643')
-                    .setTitle('React to join!')
-                    .setDescription(`\n\n${blueTeamEmoji} for blue team\n` 
-                    + `${redTeamEmoji} for red team`)
-                    .addFields(
-                        embedLikeField,
-                        { name: '\u200B', value: '\u200B' },
-                    )
-                    .setFooter(
-                        `All works made with ❤️ by ${bot.config.author}`,
-                    );
-                    reaction.message.edit(newEmbed);
-                })
-
-                twoCollector.on('end', reaction => {
-                    
-                })
-                let blueTeam = [];
-                let redTeam = [];
-                msg.reactions.cache.forEach(async r => {
-                const reactionFilter = (reaction, user) => reaction.emoji.name = r.emoji.name;
-                const collector = msg
-                .createReactionCollector(reactionFilter, {
-                    max: args[1],
-                    dispose: true
-                });
-
-                // when someone react to this message do:
-                collector.on('collect', reaction => {
-                    console.log(`clicked`)
-                });
-
-                collector.on('remove', reaction => {
-                    
-                });
-            })
-        })
 }
 
 const deleteMessage = (message) => {
@@ -265,13 +176,13 @@ const deleteMessage = (message) => {
 }
 
 // using react role to distribute
-const distribute = async ({ message, args, cmd, bot, logger, Discord }, gameData ) => {
+const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData ) => {
     const channel = message.channel.id;
     const blueTeamRole = gameData.gameRoles[0];
     const redTeamRole = gameData.gameRoles[1];
 
-    const blueTeamEmoji = '💙';
-    const redTeamEmoji = '❤️';
+    const blueTeamEmoji = '🔹';
+    const redTeamEmoji = '🔸';
 
     let embed = new Discord.MessageEmbed()
         .setColor('#e42643')
@@ -289,6 +200,9 @@ const distribute = async ({ message, args, cmd, bot, logger, Discord }, gameData
 
     let redTeam = [];
     let blueTeam = [];
+
+    let redTeamID = [];
+    let blueTeamID = [];
 
     bot.client.on('messageReactionAdd', async (reaction, user) => {
         reaction.fetch(reaction => {
@@ -312,6 +226,7 @@ const distribute = async ({ message, args, cmd, bot, logger, Discord }, gameData
                     await reaction.users.remove(user);
 
                 blueTeam.push(user.username);
+                blueTeamID.push(user.id);
                 await reaction.message.guild.members.cache.get(user.id).roles.add(blueTeamRole);
             }
             if (reaction.emoji.name === redTeamEmoji) {
@@ -325,6 +240,7 @@ const distribute = async ({ message, args, cmd, bot, logger, Discord }, gameData
                     await reaction.users.remove(user);
 
                 redTeam.push(user.username);
+                redTeamID.push(user.id);
                 await reaction.message.guild.members.cache.get(user.id).roles.add(redTeamRole);
             }
         } else {
@@ -341,10 +257,12 @@ const distribute = async ({ message, args, cmd, bot, logger, Discord }, gameData
         if (reaction.message.channel.id == channel) {
             if (reaction.emoji.name === blueTeamEmoji) {
                 blueTeam.splice(blueTeam.indexOf(user.username), 1);
+                blueTeamID.splice(blueTeam.indexOf(user.id), 1);
                 await reaction.message.guild.members.cache.get(user.id).roles.remove(blueTeamRole);
             }
             if (reaction.emoji.name === redTeamEmoji) {
                 redTeam.splice(redTeam.indexOf(user.username), 1);
+                redTeamID.splice(redTeam.indexOf(user.id), 1);
                 await reaction.message.guild.members.cache.get(user.id).roles.remove(redTeamRole);
             }
         } else {
@@ -352,10 +270,11 @@ const distribute = async ({ message, args, cmd, bot, logger, Discord }, gameData
         }
     });
 
-    
+
 
     setTimeout(() => {
         console.log(blueTeam, redTeam)
+        console.log(blueTeamID, redTeamID)
         const newEmbed = new Discord.MessageEmbed()
         .setColor('#e42643')
         .setTitle('Final Result')
@@ -368,12 +287,36 @@ const distribute = async ({ message, args, cmd, bot, logger, Discord }, gameData
             `All works made with ❤️ by ${bot.config.author}`,
         );
         messageEmbed.delete();
+        blueTeamID.forEach(async id => {
+            const respone = await playerModel.findOneAndUpdate(
+                {
+                    playerId: id,
+                },
+                {
+                    $set: {
+                        onGame: true,
+                    },
+                },
+            );
+        });
+
+        redTeamID.forEach(async id => {
+            const respone = await playerModel.findOneAndUpdate(
+                {
+                    playerId: id,
+                },
+                {
+                    $set: {
+                        onGame: true,
+                    },
+                },
+            );
+        });
         return message.channel.send(newEmbed)
     }, 5000);
 };
 
 module.exports = {
-    distribute,
     normal,
     randomDistribute,
     test,

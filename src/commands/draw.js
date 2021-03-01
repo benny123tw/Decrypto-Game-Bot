@@ -1,5 +1,6 @@
-const { keyword } = require('chalk');
+const chalk = require('chalk');
 const gameDB = require('../functions/gameDB');
+const gameModel = require('../models/gameSchema');
 
 module.exports = {
     name: 'draw',
@@ -11,13 +12,71 @@ module.exports = {
         await gameDB(bot, logger, message)
             .then(result => (gameData = result))
             .catch(err => console.log(err));
+        
+        if (!gameData.onGame || !DB.player.onGame) return message.reply(`You're not in game`);
+        if (!gameData.gameRooms.includes(message.channel.id)) return message.reply(`Please type in Game Room!(Under Decrypto category)`);
 
         if(!args[0]) 
             return message.reply(`Enter \`${bot.config.prefix}draw (key/code)\` to execute the command.`);
-        if(cmd.startsWith('key') || args[0].startsWith('key'))
-            return message.channel.send(`Your keywords: ${drawCard(gameData.keywords, 4).join(', ')}`)
+        if(cmd.startsWith('key') || args[0].startsWith('key')) {
+            let keyString = '', count = 1;
+            let keyArray = drawCard(gameData.keywords, 4);
+            keyArray.forEach(key => {
+                keyString += `${count++}. **${key}**\n`;
+            });
+            if (message.channel.id === gameData.gameRooms[1]) {
+                await gameModel.findOneAndUpdate(
+                    {
+                        serverId: message.guild.id,
+                    },
+                    {
+                        $set: {
+                            blueTeamKeywords: keyArray
+                        },
+                    },
+                );
+            }
+            if (message.channel.id === gameData.gameRooms[2]) {
+                await gameModel.findOneAndUpdate(
+                    {
+                        serverID: message.guild.id
+                    },
+                    {
+                        $set: {
+                            redTeamKeywords: keyArray
+                        }
+                    }
+                )
+            }
+            
+            const keyEmbed = new Discord.MessageEmbed()
+                .setColor('#e42643')
+                .setTitle('KeyWords')
+                .addFields(
+                    { name: '\u200B', value: '\u200B' },
+                    { name: `Game ${gameData.curGames}`, value: `${keyString}` },
+                    { name: '\u200B', value: '\u200B' },
+                )
+                .setFooter(
+                    `All works made with ❤️ by ${bot.config.author}`,
+                );
+            return message.channel.send(keyEmbed);
+        }
+
+        const codeEmbed = new Discord.MessageEmbed()
+                .setColor('#e42643')
+                .setTitle('Codes')
+                .addFields(
+                    { name: '\u200B', value: '\u200B' },
+                    { name: `Game ${gameData.curGames}`, value: `${drawCard(gameData.codes, 3).join(', ')}` },
+                    { name: '\u200B', value: '\u200B' },
+                )
+                .setFooter(
+                    `All works made with ❤️ by ${bot.config.author}`,
+                );
+            
         if(cmd.startsWith('code') || args[0].startsWith('code'))
-            return message.channel.send(`Your codes: ${drawCard(gameData.codes, 3).join(', ')}`)
+            return message.author.send(codeEmbed)
        
     },
 };
