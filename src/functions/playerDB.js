@@ -19,6 +19,7 @@ const playerDB = async (bot, logger, message) => {
         if (!playerData) {
             const player = await playerModel.create({
                 playerId: message.member.id,
+                playerName: message.member.user.username,
                 coins: 100,
                 total_Games: 0,
                 wins: 0,

@@ -21,10 +21,48 @@ module.exports = {
         if (!gameData.onGame || gameData.redTeamKeywords.length === 0 
             || gameData.blueTeamKeywords.length === 0 || gameData.curCodes.length === 0) 
                 return message.channel.send(`Haven't draw codes yet`);        
+
+        if (message.author.id === gameData.encrypterId) {
+            message.client.channels.cache.get(gameData.gameRooms[1]).send(`<@${gameData.encrypterId}> cheating!!\nCodes have been reset!`);
+            message.client.channels.cache.get(gameData.gameRooms[2]).send(`<@${gameData.encrypterId}> cheating!!\nCodes have been reset!`);
+            await gameModel.findOneAndUpdate(
+                {
+                    serverId: message.guild.id,
+                },
+                {
+                    $inc: {
+                        total_Games: 1,
+                        cheats: 1,
+                    },
+                    $set: {
+                        encrypterId: "",
+                        curCodes: []
+                    }
+                }
+            )
+            
+            return message.reply(`Why you cheating huh?`);
+        }
         
         if (args[0] == gameData.curCodes[0] && args[1] == gameData.curCodes[1]
-            && args[2] == gameData.curCodes[2] && DB.player.team === 'BLUE') {
-                console.log(`blue + 1`)
+            && args[2] == gameData.curCodes[2]) {
+
+            if (DB.player.team === 'BLUE') {
+
+                const encrypter = await playerModel.findOne({ playerId:gameData.encrypterId });
+                if (encrypter && encrypter.team === 'RED') {
+                    const respone = await gameModel.findOneAndUpdate(
+                        {
+                            serverId: message.guild.id,
+                        },
+                        {
+                            $inc: {
+                                blueTeam_TntToken: 1,
+                            },
+                        },
+                    );
+                }
+
                 const playerRespone = await playerModel.updateMany(
                     {
                         team: "BLUE",
@@ -47,12 +85,25 @@ module.exports = {
                         },
                     },
                 );
-                message.reply(`You're correct!`);            
-        }
+                return message.reply(`You're correct!`);                 
+            }
 
-        else if (args[0] == gameData.curCodes[0] && args[1] == gameData.curCodes[1]
-            && args[2] == gameData.curCodes[2] && DB.player.team === 'RED') {
-                console.log(`red + 1`)
+            if (DB.player.team === 'RED') {
+                
+                const encrypter = await playerModel.findOne({ playerId:gameData.encrypterId });
+                if (encrypter && encrypter.team === 'BLUE') {
+                    const respone = await gameModel.findOneAndUpdate(
+                        {
+                            serverId: message.guild.id,
+                        },
+                        {
+                            $inc: {
+                                redTeam_TntToken: 1,
+                            },
+                        },
+                    );
+                }
+
                 const playerRespone = await playerModel.updateMany(
                     {
                         team: "RED",
@@ -75,11 +126,27 @@ module.exports = {
                         },
                     },
                 );
-                message.reply(`You're correct!`);            
+                return message.reply(`You're correct!`);
+            }                 
         }
 
         else {
             if (DB.player.team === 'BLUE') {
+
+                const encrypter = await playerModel.findOne({ playerId:gameData.encrypterId });
+                if (encrypter && encrypter.team === 'BLUE') {
+                    const respone = await gameModel.findOneAndUpdate(
+                        {
+                            serverId: message.guild.id,
+                        },
+                        {
+                            $inc: {
+                                blueTeam_MisToken: 1,
+                            },
+                        },
+                    );
+                }
+
                 const playerRespone = await playerModel.updateMany(
                     {
                         team: "BLUE",
@@ -95,6 +162,21 @@ module.exports = {
             }
 
             if (DB.player.team === 'RED') {
+
+                const encrypter = await playerModel.findOne({ playerId:gameData.encrypterId });
+                if (encrypter && encrypter.team === 'RED') {
+                    const respone = await gameModel.findOneAndUpdate(
+                        {
+                            serverId: message.guild.id,
+                        },
+                        {
+                            $inc: {
+                                redTeam_MisToken: 1,
+                            },
+                        },
+                    );
+                }
+
                 const playerRespone = await playerModel.updateMany(
                     {
                         team: "RED",

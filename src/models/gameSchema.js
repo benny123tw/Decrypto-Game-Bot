@@ -16,7 +16,13 @@ const gameSchema = new mongoose.Schema({
     curGames: { type: Number, default: 1 },
     blueTeamKeywords: { type: Array, default: [] },
     redTeamKeywords: { type: Array, default: [] },
+    blueTeam_IntToken: { type: Number, default: 0 },
+    blueTeam_MisToken: { type: Number, default: 0 },
+    redTeam_IntToken: { type: Number, default: 0 },
+    redTeam_MisToken: { type: Number, default: 0 },
     curCodes: { type: Array, default: [] },
+    encrypterId: { type: String, default: ''},
+    answerers: { type: Array, default: [] },
 });
 
 const model = mongoose.model('Games', gameSchema);

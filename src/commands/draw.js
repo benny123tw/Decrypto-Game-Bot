@@ -64,6 +64,8 @@ module.exports = {
         }
             
         if(cmd.startsWith('code') || args[0].startsWith('code')) {
+            if (gameData.curCodes.length) return message.channel.send(`<@${gameData.encrypterId}> has drew the codes already`);
+            
             const codeArray = drawCard(gameData.codes, 3);
             const respone = await gameModel.findOneAndUpdate(
                 {
@@ -72,6 +74,7 @@ module.exports = {
                 {
                     $set: {
                         curCodes: codeArray,
+                        encrypterId: message.author.id
                     },
                 },
             );
