@@ -46,6 +46,7 @@ winston.addColors({
     modwarn: 'yellow',
     modinfo: 'green',
     debug: 'blue',
+    DB: 'purple',
 });
 
 // Config
