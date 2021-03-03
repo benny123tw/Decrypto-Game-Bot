@@ -13,7 +13,7 @@ const gameSchema = new mongoose.Schema({
     keywords: { type: Array, default: defaultKeywords},
     codes: { type: Array, default: codes},
     onGame: { type: Boolean, default: false },
-    curGames: { type: Number, default: 1 },
+    curGames: { type: Number, default: 0 },
     blueTeamKeywords: { type: Array, default: [] },
     redTeamKeywords: { type: Array, default: [] },
     blueTeam_IntToken: { type: Number, default: 0 },

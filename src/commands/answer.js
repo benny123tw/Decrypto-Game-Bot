@@ -53,6 +53,7 @@ module.exports = {
             return message.reply(`Why you cheating huh?`);
         }
 
+        // check if team send two times answer
         if (gameData.answerers.includes(DB.player.team))
             return message.reply(`Don't send the answer 2 times`);
 
@@ -161,6 +162,7 @@ module.exports = {
             message.reply(`You're correct!`);
         }
 
+        // Wrong answer
         else {
             if (DB.player.team === 'BLUE') {
                 logger.modules(`${chalk.blueBright(`Blue`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);
@@ -242,6 +244,9 @@ module.exports = {
             message.reply(`You're wrong! The codes are: ${gameData.curCodes.join(', ')}`);
         }
 
+        /**
+         * Sending `reset codes` message to both channels and show the current tokens each team
+         */
         message.client.channels.cache.get(gameData.gameRooms[1]).send(`**Codes have been reset!**\nDraw the codes!`);
         message.client.channels.cache.get(gameData.gameRooms[2]).send(`**Codes have been reset!**\nDraw the codes!`);
 
@@ -259,5 +264,54 @@ module.exports = {
             );
         message.client.channels.cache.get(gameData.gameRooms[1]).send(scoreEmbed);
         message.client.channels.cache.get(gameData.gameRooms[2]).send(scoreEmbed);
+
+        /**
+         * Check if there have 2 tokens 
+         */
+        const server = await gameModel.findOne({ serverId: message.guild.id });
+        if (server.blueTeam_IntToken < 2 && server.blueTeam_MisToken < 2 &&
+            server.redTeam_IntToken < 2 && server.redTeam_MisToken < 2) return;
+        
+        // blue team and red team not tie
+        if (server.blueTeam_IntToken >= 2 && server.redTeam_IntToken < 2) 
+            logger.modules(`${chalk.blueBright(`Blue`)} Team win!`)
+
+        // blue team and red team not tie
+        else if (server.redTeam_IntToken >= 2 && server.blueTeam_IntToken < 2) 
+            logger.modules(`${chalk.redBright(`Red`)} Team win!`)
+
+        // blue team and red team not dual
+        else if (server.blueTeam_MisToken >= 2 && server.redTeam_MisToken < 2) 
+            logger.modules(`${chalk.blueBright(`Blue`)} Team Lose!`)
+
+        // blue team and red team not dual
+        else if (server.blueTeam_MisToken >= 2 && server.redTeam_MisToken < 2) 
+            logger.modules(`${chalk.redBright(`Red`)} Team Lose!`)
+        
+        else {
+            let blueTeamScore = server.blueTeam_IntToken - server.blueTeam_MisToken;
+            let redTeamScore = server.redTeam_IntToken - server.redTeam_MisToken;
+
+            blueTeamScore > redTeamScore ? logger.modules(`${chalk.blueBright(`Blue`)} Team win!`) :
+            logger.modules(`${chalk.redBright(`Red`)} Team win!`)
+        }
+
+        await gameModel.findOneAndUpdate(
+            {
+                serverId: message.guild.id,
+            },
+            {
+                $set: {
+                    blueTeamKeywords: [],
+                    redTeamKeywords: [],
+                    blueTeam_IntToken: 0,
+                    blueTeam_MisToken: 0,
+                    redTeam_IntToken: 0,
+                    redTeam_MisToken: 0,
+                    encrypterId: '',
+                    curCodes: [],
+                }
+            }
+        )
     },
 };

@@ -19,13 +19,21 @@ module.exports = {
         if(!args[0]) 
             return message.reply(`Enter \`${bot.config.prefix}draw (key/code)\` to execute the command.`);
         if(cmd.startsWith('key') || args[0].startsWith('key')) {
+
+            // check if keywords have been drew
+            if (gameData.blueTeamKeywords.length) return message.reply(`Keywords have been drew!`); 
+            else if (gameData.redTeamKeywords.length) return message.reply(`Keywords have been drew!`); 
+
             let keyString = '', count = 1;
             let keyArray = drawCard(gameData.keywords, 4);
             keyArray.forEach(key => {
                 keyString += `${count++}. **${key}**\n`;
             });
+            if (!gameData.blueTeamKeywords.length && !gameData.redTeamKeywords.length) 
+                await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$inc:{curGames: 1}});
+
             if (message.channel.id === gameData.gameRooms[1]) {
-                const respone = await gameModel.findOneAndUpdate(
+                await gameModel.findOneAndUpdate(
                     {
                         serverId: message.guild.id,
                     },
@@ -58,7 +66,7 @@ module.exports = {
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
-                    `All works made with ❤️ by ${bot.config.author}`,
+                    `Copyright ©️ 2021 Decrypto. All right Reversed.`,
                 );
             return message.channel.send(keyEmbed);
         }
@@ -87,7 +95,7 @@ module.exports = {
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
-                    `All works made with ❤️ by ${bot.config.author}`,
+                    `Copyright ©️ 2021 Decrypto. All right Reversed.`,
                 );
             return message.author.send(codeEmbed)
         }
