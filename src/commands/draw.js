@@ -18,51 +18,53 @@ module.exports = {
 
         if(!args[0]) 
             return message.reply(`Enter \`${bot.config.prefix}draw (key/code)\` to execute the command.`);
+
         if(cmd.startsWith('key') || args[0].startsWith('key')) {
 
             // check if keywords have been drew
-            if (gameData.blueTeamKeywords.length) return message.reply(`Keywords have been drew!`); 
-            else if (gameData.redTeamKeywords.length) return message.reply(`Keywords have been drew!`); 
+            if (DB.player.team === 'BLUE' && gameData.blueTeam.keywords.length) return message.reply(`Keywords have been drew!`); 
+            else if (DB.player.team === 'RED' && gameData.redTeam.keywords.length) return message.reply(`Keywords have been drew!`); 
 
             let keyString = '', count = 1;
             let keyArray = drawCard(gameData.keywords, 4);
             keyArray.forEach(key => {
                 keyString += `${count++}. **${key}**\n`;
             });
-            if (!gameData.blueTeamKeywords.length && !gameData.redTeamKeywords.length) 
+            if (!gameData.blueTeam.keywords.length && !gameData.redTeam.keywords.length) 
                 await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$inc:{curGames: 1}});
-
-            if (message.channel.id === gameData.gameRooms[1]) {
+                
+            if (DB.player.team === 'BLUE' && message.channel.id === gameData.gameRooms[1]) {
                 await gameModel.findOneAndUpdate(
                     {
                         serverId: message.guild.id,
                     },
                     {
                         $set: {
-                            blueTeamKeywords: keyArray,
+                            "blueTeam.keywords": keyArray,
                         },
                     },
                 );
             }
-            if (message.channel.id === gameData.gameRooms[2]) {
+            if (DB.player.team === 'RED' && message.channel.id === gameData.gameRooms[2]) {
                 const respone = await gameModel.findOneAndUpdate(
                     {
                         serverId: message.guild.id,
                     },
                     {
                         $set: {
-                            redTeamKeywords: keyArray,
+                            "redTeam.keywords": keyArray,
                         },
                     },
                 );
             }
             
+            const updateGameData = await gameModel.findOne({serverId: message.guild.id});
             const keyEmbed = new Discord.MessageEmbed()
                 .setColor('#e42643')
                 .setTitle('KeyWords')
                 .addFields(
                     { name: '\u200B', value: '\u200B' },
-                    { name: `Game ${gameData.curGames}`, value: `${keyString}` },
+                    { name: `Game ${updateGameData.curGames}`, value: `${keyString}` },
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
@@ -72,26 +74,43 @@ module.exports = {
         }
             
         if(cmd.startsWith('code') || args[0].startsWith('code')) {
-            if (gameData.curCodes.length) return message.channel.send(`<@${gameData.encrypterId}> has drew the codes already`);
+            if (DB.player.team === 'BLUE' && gameData.blueTeam.curCodes.length) return message.channel.send(`<@${gameData.blueTeam.encrypterId}> has drew the codes already`);
+            else if (DB.player.team === 'RED' && gameData.redTeam.curCodes.length) return message.channel.send(`<@${gameData.redTeam.encrypterId}> has drew the codes already`);
             
             const codeArray = drawCard(gameData.codes, 3);
-            const respone = await gameModel.findOneAndUpdate(
-                {
-                    serverId: message.guild.id,
-                },
-                {
-                    $set: {
-                        curCodes: codeArray,
-                        encrypterId: message.author.id
+            
+            if (DB.player.team === 'BLUE')
+                await gameModel.findOneAndUpdate(
+                    {
+                        serverId: message.guild.id,
                     },
-                },
-            );
+                    {
+                        $set: {
+                            "blueTeam.curCodes": codeArray,
+                            "blueTeam.encrypterId": message.author.id
+                        },
+                    },
+                );
+
+            else if (DB.player.team === 'RED')
+                await gameModel.findOneAndUpdate(
+                    {
+                        serverId: message.guild.id,
+                    },
+                    {
+                        $set: {
+                            "redTeam.curCodes": codeArray,
+                            "redTeam.encrypterId": message.author.id
+                        },
+                    },
+                );
+            const updateGameData = await gameModel.findOne({serverId: message.guild.id});
             const codeEmbed = new Discord.MessageEmbed()
                 .setColor('#e42643')
                 .setTitle('Codes')
                 .addFields(
                     { name: '\u200B', value: '\u200B' },
-                    { name: `Game ${gameData.curGames}`, value: `${codeArray.join(', ')}` },
+                    { name: `Game ${updateGameData.curGames}`, value: `${codeArray.join(', ')}` },
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(

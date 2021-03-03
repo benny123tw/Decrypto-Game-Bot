@@ -20,9 +20,8 @@ const gameDB = async (bot, logger, message) => {
             const game = await gameModel.create({
                 serverId: message.guild.id,
                 serverName: message.guild.name,
+                curEncrypterTeam: 'BLUE',
                 onGame: 0,
-                curKeywords: [],
-                curCodes: [],
             });
             game.save();
             logger.info(chalk.redBright(`Didn't find data on db. Generating...`));

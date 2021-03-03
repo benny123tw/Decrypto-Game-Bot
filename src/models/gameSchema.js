@@ -14,15 +14,22 @@ const gameSchema = new mongoose.Schema({
     codes: { type: Array, default: codes},
     onGame: { type: Boolean, default: false },
     curGames: { type: Number, default: 0 },
-    blueTeamKeywords: { type: Array, default: [] },
-    redTeamKeywords: { type: Array, default: [] },
-    blueTeam_IntToken: { type: Number, default: 0 },
-    blueTeam_MisToken: { type: Number, default: 0 },
-    redTeam_IntToken: { type: Number, default: 0 },
-    redTeam_MisToken: { type: Number, default: 0 },
-    curCodes: { type: Array, default: [] },
-    encrypterId: { type: String, default: ''},
+    curEncrypterTeam: { type: String, default: 'BLUE' },
     answerers: { type: Array, default: [] },
+    blueTeam: { type: JSON, default: {
+        keywords: { type: Array, default: [] },
+        intToken: { type: Number, default: 0 },
+        misToken: { type: Number, default: 0 },
+        curCodes: { type: Array, default: [] },
+        encrypterId: { type: String, default: ''},
+    } },
+    redTeam: { type: JSON, default: {
+        keywords: { type: Array, default: [] },
+        intToken: { type: Number, default: 0 },
+        misToken: { type: Number, default: 0 },
+        curCodes: { type: Array, default: [] },
+        encrypterId: { type: String, default: ''},
+    } },
 });
 
 const model = mongoose.model('Games', gameSchema);

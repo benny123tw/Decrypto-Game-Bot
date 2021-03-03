@@ -2,6 +2,7 @@ const playerModel = require('../models/playerSchema');
 const gameDB = require('../functions/gameDB');
 const gameModel = require('../models/gameSchema');
 const chalk = require('chalk');
+const codeChecker = require('../functions/codeChecker');
 
 module.exports = {
     name: 'answer',
@@ -22,8 +23,9 @@ module.exports = {
         /**
          * Return if codes haven't draw
          */
-        if (!gameData.onGame || gameData.redTeamKeywords.length === 0 
-            || gameData.blueTeamKeywords.length === 0 || gameData.curCodes.length === 0) 
+        if (!gameData.onGame || gameData.redTeam.keywords.length === 0 
+            || gameData.blueTeam.keywords.length === 0 || gameData.blueTeam.curCodes.length === 0
+            || gameData.redTeam.curCodes.length === 0) 
                 return message.channel.send(`Haven't draw codes yet`);        
 
         /**
@@ -31,9 +33,10 @@ module.exports = {
          *  increase cheating times and reset codes to []
          *  send to two channles message 'cheaing'
          */
-        if (message.author.id === gameData.encrypterId) {
-            message.client.channels.cache.get(gameData.gameRooms[1]).send(`<@${gameData.encrypterId}> cheating!!\nCodes have been reset!`);
-            message.client.channels.cache.get(gameData.gameRooms[2]).send(`<@${gameData.encrypterId}> cheating!!\nCodes have been reset!`);
+        if (gameData.curEncrypterTeam === 'BLUE' && message.author.id === gameData.blueTeam.encrypterId) {
+            
+            message.client.channels.cache.get(gameData.gameRooms[1]).send(`<@${gameData.blueTeam.encrypterId}> cheating!!\nCodes have been reset!`);
+            message.client.channels.cache.get(gameData.gameRooms[2]).send(`<@${gameData.blueTeam.encrypterId}> cheating!!\nCodes have been reset!`);
             await gameModel.findOneAndUpdate(
                 {
                     serverId: message.guild.id,
@@ -44,8 +47,31 @@ module.exports = {
                         cheats: 1,
                     },
                     $set: {
-                        encrypterId: "",
-                        curCodes: []
+                        "blueTeam.encrypterId": "",
+                        "blueTeam.curCodes": []
+                    }
+                }
+            )
+            
+            return message.reply(`Why you cheating huh?`);
+        }
+
+        if (gameData.curEncrypterTeam === 'RED' && message.author.id === gameData.redTeam.encrypterId) {
+            
+            message.client.channels.cache.get(gameData.gameRooms[1]).send(`<@${gameData.redTeam.encrypterId}> cheating!!\nCodes have been reset!`);
+            message.client.channels.cache.get(gameData.gameRooms[2]).send(`<@${gameData.redTeam.encrypterId}> cheating!!\nCodes have been reset!`);
+            await gameModel.findOneAndUpdate(
+                {
+                    serverId: message.guild.id,
+                },
+                {
+                    $inc: {
+                        total_Games: 1,
+                        cheats: 1,
+                    },
+                    $set: {
+                        "redTeam.encrypterId": "",
+                        "redTeam.curCodes": []
                     }
                 }
             )
@@ -70,193 +96,53 @@ module.exports = {
          *  if answer is correct check answerer team 
          *  increase total games and win games
          *  and check if they can get the token
+         *  BLUE TEAM
          */
-        if (args[0] == gameData.curCodes[0] && args[1] == gameData.curCodes[1]
-            && args[2] == gameData.curCodes[2]) {
-
+        
+        if (gameData.curEncrypterTeam === 'BLUE') {
             // find encrypter's team
-            const encrypter = await playerModel.findOne({ playerId:gameData.encrypterId });
-
-            // BLUE TEAM
-            if (DB.player.team === 'BLUE') {
-
-                // if encrypter team is RED than increase blue team's interception token
-                if (encrypter && encrypter.team === 'RED') {
-                    logger.modules(`${chalk.blueBright(`Blue`)} team got ${chalk.greenBright(`Interception Token`)}!`);
-                    const respone = await gameModel.findOneAndUpdate(
-                        {
-                            serverId: message.guild.id,
-                        },
-                        {
-                            $inc: {
-                                blueTeam_IntToken: 1,
-                            },
-                        },
-                    );
-                }
-
-                // update all blue team career
-                const playerRespone = await playerModel.updateMany(
-                    {
-                        team: "BLUE",
-                        onGame: true
-                    },
-                    {
-                        $inc: {
-                            total_Games: 1,
-                            wins: 1,
-                        },
-                    },
-                );              
+            const encrypter = await playerModel.findOne({ playerId:gameData.blueTeam.encrypterId });
+            if (args[0] == gameData.blueTeam.curCodes[0] && args[1] == gameData.blueTeam.curCodes[1]
+                && args[2] == gameData.blueTeam.curCodes[2]) {
+                codeChecker(encrypter, DB.player, logger);
+            } else {
+                codeChecker.codeIncorrectChecker(encrypter, DB.player, logger);
             }
+        }        
 
-            // RED TEAM
-            if (DB.player.team === 'RED') {
-                // if encrypter team is BLUE than increase red team's interception token
-                if (encrypter && encrypter.team === 'BLUE') {
-                    logger.modules(`${chalk.red(`Red`)} team got ${chalk.greenBright(`Interception Token`)}!`);
-                    const respone = await gameModel.findOneAndUpdate(
-                        {
-                            serverId: message.guild.id,
-                        },
-                        {
-                            $inc: {
-                                redTeam_IntToken: 1,
-                            },
-                        },
-                    );
-                }
+        /**
+         *  if answer is correct check answerer team 
+         *  increase total games and win games
+         *  and check if they can get the token
+         *  RED TEAM
+         */
 
-                // update all red team career
-                const playerRespone = await playerModel.updateMany(
-                    {
-                        team: "RED",
-                        onGame: true
-                    },
-                    {
-                        $inc: {
-                            total_Games: 1,
-                            wins: 1,
-                        },
-                    },
-                );
+        if (gameData.curEncrypterTeam === 'RED') {
+            // find encrypter
+            const encrypter = await playerModel.findOne({ playerId:gameData.redTeam.encrypterId });
+            if (args[0] == gameData.redTeam.curCodes[0] && args[1] == gameData.redTeam.curCodes[1]
+                && args[2] == gameData.redTeam.curCodes[2]) {
+                codeChecker.codeCorrectChecker(encrypter, DB.player, logger);
+            } else {
+                codeChecker.codeIncorrectChecker(encrypter, DB.player, logger);
             }
-
-            // if blue team or red team isn't answer than just return message
-            let answerers = await gameModel.findOne({ serverId: message.guild.id });
-            if (!answerers.answerers.includes('RED') || !answerers.answerers.includes('BLUE')) 
-                return message.reply(`You're correct!`); 
-
-            // reset curcodes and answerers
-            const respone = await gameModel.findOneAndUpdate(
-                {
-                    serverId: message.guild.id,
-                },
-                {
-                    $set: {
-                        curCodes: [],
-                        answerers: [],
-                    },
-                },
-            );
-            message.reply(`You're correct!`);
         }
-
-        // Wrong answer
-        else {
-            if (DB.player.team === 'BLUE') {
-                logger.modules(`${chalk.blueBright(`Blue`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);
-                const encrypter = await playerModel.findOne({ playerId:gameData.encrypterId });
-                if (encrypter && encrypter.team === 'BLUE') {
-                    const respone = await gameModel.findOneAndUpdate(
-                        {
-                            serverId: message.guild.id,
-                        },
-                        {
-                            $inc: {
-                                blueTeam_MisToken: 1,
-                            },
-                        },
-                    );
-                }
-
-                const playerRespone = await playerModel.updateMany(
-                    {
-                        team: "BLUE",
-                        onGame: true
-                    },
-                    {
-                        $inc: {
-                            total_Games: 1,
-                            loses: 1,
-                        },
-                    },
-                );
-            }
-
-            if (DB.player.team === 'RED') {
-                logger.modules(`${chalk.redBright(`Red`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);
-                const encrypter = await playerModel.findOne({ playerId:gameData.encrypterId });
-                if (encrypter && encrypter.team === 'RED') {
-                    const respone = await gameModel.findOneAndUpdate(
-                        {
-                            serverId: message.guild.id,
-                        },
-                        {
-                            $inc: {
-                                redTeam_MisToken: 1,
-                            },
-                        },
-                    );
-                }
-
-                const playerRespone = await playerModel.updateMany(
-                    {
-                        team: "RED",
-                        onGame: true
-                    },
-                    {
-                        $inc: {
-                            total_Games: 1,
-                            loses: 1,
-                        },
-                    },
-                );
-            }
-
-            // if blue team or red team isn't answer than just return message
-            let answerers = await gameModel.findOne({ serverId: message.guild.id });
-            console.log(answerers.answerers)
-            if (!answerers.answerers.includes('RED') || !answerers.answerers.includes('BLUE')) 
-                return message.reply(`You're wrong! Real codes: ${gameData.curCodes.join(', ')}`);
-
-            const respone = await gameModel.findOneAndUpdate(
-                {
-                    serverId: message.guild.id,
-                },
-                {
-                    $set: {
-                        curCodes: [],
-                    },
-                },
-            );
-
-            message.reply(`You're wrong! The codes are: ${gameData.curCodes.join(', ')}`);
-        }
+        
 
         /**
          * Sending `reset codes` message to both channels and show the current tokens each team
          */
-        message.client.channels.cache.get(gameData.gameRooms[1]).send(`**Codes have been reset!**\nDraw the codes!`);
-        message.client.channels.cache.get(gameData.gameRooms[2]).send(`**Codes have been reset!**\nDraw the codes!`);
+        const updateGameData = await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "RED"}});
+        message.client.channels.cache.get(gameData.gameRooms[1]).send(`**Codes have been reset!**\nIt's ${updateGameData.curEncrypterTeam} round!`);
+        message.client.channels.cache.get(gameData.gameRooms[2]).send(`**Codes have been reset!**\nIt's ${updateGameData.curEncrypterTeam} round!`);
 
         const scoreEmbed = new Discord.MessageEmbed()
             .setColor('#e42643')
             .setTitle(`Current 2 Teams Tokens`)
             .addFields(
-                { name: 'BLUE', value: `✅ INT Token: **${gameData.blueTeam_IntToken}**\n\n😥 MIS Token: **${gameData.blueTeam_MisToken}**`},
+                { name: 'BLUE', value: `✅ INT Token: **${gameData.blueTeam.intToken}**\n\n😥 MIS Token: **${gameData.blueTeam.misToken}**`},
                 { name: '\u200B', value: '\u200B' },
-                { name: 'RED', value: `✅ INT Token: **${gameData.redTeam_IntToken}**\n\n😥 MIS Token: **${gameData.redTeam_MisToken}**` },
+                { name: 'RED', value: `✅ INT Token: **${gameData.redTeam.intToken}**\n\n😥 MIS Token: **${gameData.redTeam.misToken}**` },
                 { name: '\u200B', value: '\u200B' },
             )
             .setFooter(
@@ -269,28 +155,28 @@ module.exports = {
          * Check if there have 2 tokens 
          */
         const server = await gameModel.findOne({ serverId: message.guild.id });
-        if (server.blueTeam_IntToken < 2 && server.blueTeam_MisToken < 2 &&
-            server.redTeam_IntToken < 2 && server.redTeam_MisToken < 2) return;
+        if (server.blueTeam.intToken < 2 && server.blueTeam.misToken < 2 &&
+            server.redTeam.intToken < 2 && server.redTeam.misToken < 2) return;
         
         // blue team and red team not tie
-        if (server.blueTeam_IntToken >= 2 && server.redTeam_IntToken < 2) 
+        if (server.blueTeam.intToken >= 2 && server.redTeam.intToken < 2) 
             logger.modules(`${chalk.blueBright(`Blue`)} Team win!`)
 
         // blue team and red team not tie
-        else if (server.redTeam_IntToken >= 2 && server.blueTeam_IntToken < 2) 
+        else if (server.redTeam.intToken >= 2 && server.blueTeam.intToken < 2) 
             logger.modules(`${chalk.redBright(`Red`)} Team win!`)
 
         // blue team and red team not dual
-        else if (server.blueTeam_MisToken >= 2 && server.redTeam_MisToken < 2) 
+        else if (server.blueTeam.misToken >= 2 && server.redTeam.misToken < 2) 
             logger.modules(`${chalk.blueBright(`Blue`)} Team Lose!`)
 
         // blue team and red team not dual
-        else if (server.blueTeam_MisToken >= 2 && server.redTeam_MisToken < 2) 
+        else if (server.blueTeam.misToken >= 2 && server.redTeam.misToken < 2) 
             logger.modules(`${chalk.redBright(`Red`)} Team Lose!`)
         
         else {
-            let blueTeamScore = server.blueTeam_IntToken - server.blueTeam_MisToken;
-            let redTeamScore = server.redTeam_IntToken - server.redTeam_MisToken;
+            let blueTeamScore = server.blueTeam.intToken - server.blueTeam.misToken;
+            let redTeamScore = server.redTeam.intToken - server.redTeam.misToken;
 
             blueTeamScore > redTeamScore ? logger.modules(`${chalk.blueBright(`Blue`)} Team win!`) :
             logger.modules(`${chalk.redBright(`Red`)} Team win!`)
@@ -302,14 +188,16 @@ module.exports = {
             },
             {
                 $set: {
-                    blueTeamKeywords: [],
-                    redTeamKeywords: [],
-                    blueTeam_IntToken: 0,
-                    blueTeam_MisToken: 0,
-                    redTeam_IntToken: 0,
-                    redTeam_MisToken: 0,
-                    encrypterId: '',
-                    curCodes: [],
+                    "blueTeam.keywords": [],
+                    "redTeam.keywords": [],
+                    "blueTeam.intToken": 0,
+                    "blueTeam.misToken": 0,
+                    "redTeam.intToken": 0,
+                    "redTeam.misToken": 0,
+                    "blueTeam.encrypterId": '',
+                    "redTeam.encrypterId": '',
+                    "blueTeam.curCodes": [],
+                    "redTeam.curCodes": [],
                 }
             }
         )
