@@ -1,10 +1,11 @@
 const gameModel = require('../models/gameSchema');
+const gameDB = require('../functions/gameDB');
 const playerModel = require('../models/playerSchema');
 const chalk = require('chalk');
 
-const codeCorrectChecker = async (encrypter, player, logger) => {
+const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, Discord }, DB) => {
     // BLUE TEAM
-    if (player.team === 'BLUE') {
+    if (DB.player.team === 'BLUE') {
 
         // if encrypter team is RED than increase blue team's interception token
         if (encrypter && encrypter.team === 'RED') {
@@ -37,7 +38,7 @@ const codeCorrectChecker = async (encrypter, player, logger) => {
     }
 
     // RED TEAM
-    if (player.team === 'RED') {
+    if (DB.player.team === 'RED') {
         // if encrypter team is BLUE than increase red team's interception token
         if (encrypter && encrypter.team === 'BLUE') {
             logger.modules(`${chalk.red(`Red`)} team got ${chalk.greenBright(`Interception Token`)}!`);
@@ -54,7 +55,7 @@ const codeCorrectChecker = async (encrypter, player, logger) => {
         }
 
         // update all red team career
-        const playerRespone = await playerModel.updateMany(
+        await playerModel.updateMany(
             {
                 team: "RED",
                 onGame: true
@@ -70,29 +71,23 @@ const codeCorrectChecker = async (encrypter, player, logger) => {
 
     // if blue team or red team isn't answer than just return message
     let answerers = await gameModel.findOne({ serverId: message.guild.id });
-    if (!answerers.answerers.includes('RED') || !answerers.answerers.includes('BLUE')) 
-        return message.reply(`You're correct!`); 
-
+    if (!answerers.answerers.includes('RED') || !answerers.answerers.includes('BLUE')) {
+        return false; 
+    }
+        
     // reset curcodes and answerers
-    const respone = await gameModel.findOneAndUpdate(
-        {
-            serverId: message.guild.id,
-        },
-        {
-            $set: {
-                curCodes: [],
-                answerers: [],
-            },
-        },
-    );
-    message.reply(`You're correct!`);
+    await gameModel.findOneAndUpdate({serverId: message.guild.id,},
+        {$set: {curCodes: [], answerers: [],}});
+    message.react(`✅`);
+    return true;
 }
 
-const codeIncorrectChecker = async (encrypter, player, logger) => {
-    if (player.team === 'BLUE') {
-        logger.modules(`${chalk.blueBright(`Blue`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);
+const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger, Discord }, DB) => {
+
+    if (DB.player.team === 'BLUE') {
         if (encrypter && encrypter.team === 'BLUE') {
-            const respone = await gameModel.findOneAndUpdate(
+            logger.modules(`${chalk.blueBright(`Blue`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);
+        await gameModel.findOneAndUpdate(
                 {
                     serverId: message.guild.id,
                 },
@@ -104,7 +99,7 @@ const codeIncorrectChecker = async (encrypter, player, logger) => {
             );
         }
 
-        const playerRespone = await playerModel.updateMany(
+        await playerModel.updateMany(
             {
                 team: "BLUE",
                 onGame: true
@@ -118,10 +113,10 @@ const codeIncorrectChecker = async (encrypter, player, logger) => {
         );
     }
 
-    if (player.team === 'RED') {
-        logger.modules(`${chalk.redBright(`Red`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);
+    if (DB.player.team === 'RED') {
         if (encrypter && encrypter.team === 'RED') {
-            const respone = await gameModel.findOneAndUpdate(
+        logger.modules(`${chalk.redBright(`Red`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);
+            await gameModel.findOneAndUpdate(
                 {
                     serverId: message.guild.id,
                 },
@@ -133,7 +128,7 @@ const codeIncorrectChecker = async (encrypter, player, logger) => {
             );
         }
 
-        const playerRespone = await playerModel.updateMany(
+        await playerModel.updateMany(
             {
                 team: "RED",
                 onGame: true
@@ -147,13 +142,19 @@ const codeIncorrectChecker = async (encrypter, player, logger) => {
         );
     }
 
-    // if blue team or red team isn't answer than just return message
-    let answerers = await gameModel.findOne({ serverId: message.guild.id });
-    console.log(answerers.answerers)
-    if (!answerers.answerers.includes('RED') || !answerers.answerers.includes('BLUE')) 
-        return message.reply(`You're wrong! Real codes: ${gameData.curCodes.join(', ')}`);
+    // get the db data (will get data after switch team)
+    let gameData = await gameModel.findOne({serverId: message.guild.id});
 
-    const respone = await gameModel.findOneAndUpdate(
+    // if blue team or red team isn't answer than just return message
+    
+    console.log(`current answerers: ${gameData.answerers}`);
+    if (!gameData.answerers.includes('RED') || !gameData.answerers.includes('BLUE')) {
+        message.react(`❌`);
+        return false;
+    }
+        
+
+    await gameModel.findOneAndUpdate(
         {
             serverId: message.guild.id,
         },
@@ -164,7 +165,12 @@ const codeIncorrectChecker = async (encrypter, player, logger) => {
         },
     );
 
-    message.reply(`You're wrong! The codes are: ${gameData.curCodes.join(', ')}`);
+    message.react(`❌`);
+    if (gameData.curEncrypterTeam === 'BLUE')
+        message.channel.send(`The codes are: **${gameData.blueTeam.curCodes.join(', ')}**`);
+    if (gameData.curEncrypterTeam === 'RED')
+        message.channel.send(`The codes are: **${gameData.redTeam.curCodes.join(', ')}**`);
+    return true;
 }
 
 module.exports = {

@@ -7,7 +7,7 @@ module.exports = {
     name: 'start',
     aliases: [],
     permissions: [],
-    description: 'start the decrypto game!',
+    description: 'start the decrypto game! (normal / random)',
     async execute({ message, args, cmd, bot, logger, Discord }, DB) {
         /**
          * get player Data from DB and handle Promise object.
@@ -194,6 +194,11 @@ module.exports = {
             distribute.normal({ message, args, cmd, bot, logger, Discord }, gameData);
         // distribute.test({ message, args, cmd, bot, logger, Discord }, gameData);
         
-        
+       /**
+         * Sending `reset codes` message to both channels and show the current tokens each team
+         */
+        message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team** round!`);
+        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team** round!`);
+      
     },
 };

@@ -6,7 +6,7 @@ module.exports = {
     name: 'draw',
     aliases: ['d', 'keywrod', 'code', 'key', 'keywords', 'codes'],
     permissions: [],
-    description: 'deposits money to bank',
+    description: 'draw codes or keywords',
     async execute({ message, args, cmd, bot, logger, Discord }, DB) {
         let gameData;
         await gameDB(bot, logger, message)
@@ -70,7 +70,7 @@ module.exports = {
                 .setFooter(
                     `Copyright ©️ 2021 Decrypto. All right Reversed.`,
                 );
-            return message.channel.send(keyEmbed);
+            return await message.channel.send(keyEmbed).then(msg => msg.pin());
         }
             
         if(cmd.startsWith('code') || args[0].startsWith('code')) {

@@ -161,6 +161,7 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                             $set: {
                                 team: 'BLUE',
                                 onGame: true,
+                                curServerId: message.guild.id,
                             },
                         },
                     );
@@ -175,6 +176,7 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                             $set: {
                                 team: 'RED',
                                 onGame: true,
+                                curServerId: message.guild.id,
                             },
                         },
                     );
@@ -189,7 +191,7 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
-                    `All works made with ❤️ by ${bot.config.author}`,
+                    `Copyright ©️ 2021 Decrypto. All right Reversed.`,
                 );
                 message.channel.send(newEmbed);
             });
@@ -325,6 +327,7 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData ) =
                     $set: {
                         team: 'BLUE',
                         onGame: true,
+                        curServerId: message.guild.id,
                     },
                 },
             );
@@ -339,6 +342,7 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData ) =
                     $set: {
                         team: 'RED',
                         onGame: true,
+                        curServerId: message.guild.id,
                     },
                 },
             );

@@ -26,7 +26,7 @@ module.exports = {
         if (!gameData.onGame || gameData.redTeam.keywords.length === 0 
             || gameData.blueTeam.keywords.length === 0 || gameData.blueTeam.curCodes.length === 0
             || gameData.redTeam.curCodes.length === 0) 
-                return message.channel.send(`Haven't draw codes yet`);        
+                return message.channel.send(`some team haven't draw codes/keywords yet`);        
 
         /**
          *  if answerer is encrypter = cheating 
@@ -100,13 +100,23 @@ module.exports = {
          */
         
         if (gameData.curEncrypterTeam === 'BLUE') {
+            console.log(`en: blue team`)
             // find encrypter's team
             const encrypter = await playerModel.findOne({ playerId:gameData.blueTeam.encrypterId });
             if (args[0] == gameData.blueTeam.curCodes[0] && args[1] == gameData.blueTeam.curCodes[1]
                 && args[2] == gameData.blueTeam.curCodes[2]) {
-                codeChecker(encrypter, DB.player, logger);
+                    console.log(`correct`)
+                let checker = await codeChecker.codeCorrectChecker(encrypter, { message, args, cmd, bot, logger, Discord }, DB);
+                if (!checker) return message.react(`✅`); 
             } else {
-                codeChecker.codeIncorrectChecker(encrypter, DB.player, logger);
+                console.log(`incorrect`)
+                let checker = await codeChecker.codeIncorrectChecker(encrypter, { message, args, cmd, bot, logger, Discord }, DB);
+                if (!checker) {
+                    if (encrypter.team === 'BLUE')
+                        return message.channel.send(`The codes are: **${gameData.blueTeam.curCodes.join(', ')}**`);
+                    if (encrypter.team === 'RED')
+                        return message.channel.send(`The codes are: **${gameData.redTeam.curCodes.join(', ')}**`);
+                }
             }
         }        
 
@@ -118,24 +128,41 @@ module.exports = {
          */
 
         if (gameData.curEncrypterTeam === 'RED') {
+            console.log(`en: red team`)
             // find encrypter
             const encrypter = await playerModel.findOne({ playerId:gameData.redTeam.encrypterId });
             if (args[0] == gameData.redTeam.curCodes[0] && args[1] == gameData.redTeam.curCodes[1]
                 && args[2] == gameData.redTeam.curCodes[2]) {
-                codeChecker.codeCorrectChecker(encrypter, DB.player, logger);
+                console.log(`correct`)
+                let checker = await codeChecker.codeCorrectChecker(encrypter, { message, args, cmd, bot, logger, Discord }, DB);
+                if (!checker) return message.react(`✅`); 
             } else {
-                codeChecker.codeIncorrectChecker(encrypter, DB.player, logger);
+                console.log(`incorrect`)
+                let checker = await codeChecker.codeIncorrectChecker(encrypter, { message, args, cmd, bot, logger, Discord }, DB);
+                if (!checker) {
+                    if (encrypter.team === 'BLUE')
+                        return message.channel.send(`The codes are: **${gameData.blueTeam.curCodes.join(', ')}**`);
+                    if (encrypter.team === 'RED')
+                        return message.channel.send(`The codes are: **${gameData.redTeam.curCodes.join(', ')}**`);
+                }
             }
         }
-        
 
+        /**
+         * change current encrypter team
+         */
+        gameData = await gameModel.findOne({ serverId: message.guild.id });
+        if (gameData.curEncrypterTeam === 'BLUE' && gameData.answerers.includes('RED') && gameData.answerers.includes('BLUE'))
+            await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "RED"}});
+        if (gameData.curEncrypterTeam === 'RED' && gameData.answerers.includes('RED') && gameData.answerers.includes('BLUE'))
+            await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "BLUE"}});    
+        gameData = await gameModel.findOne({serverId: message.guild.id});
         /**
          * Sending `reset codes` message to both channels and show the current tokens each team
          */
-        const updateGameData = await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "RED"}});
-        message.client.channels.cache.get(gameData.gameRooms[1]).send(`**Codes have been reset!**\nIt's ${updateGameData.curEncrypterTeam} round!`);
-        message.client.channels.cache.get(gameData.gameRooms[2]).send(`**Codes have been reset!**\nIt's ${updateGameData.curEncrypterTeam} round!`);
-
+        message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team** round!`);
+        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team** round!`);
+       
         const scoreEmbed = new Discord.MessageEmbed()
             .setColor('#e42643')
             .setTitle(`Current 2 Teams Tokens`)
@@ -155,6 +182,8 @@ module.exports = {
          * Check if there have 2 tokens 
          */
         const server = await gameModel.findOne({ serverId: message.guild.id });
+        
+        // if not then return 
         if (server.blueTeam.intToken < 2 && server.blueTeam.misToken < 2 &&
             server.redTeam.intToken < 2 && server.redTeam.misToken < 2) return;
         
@@ -198,6 +227,8 @@ module.exports = {
                     "redTeam.encrypterId": '',
                     "blueTeam.curCodes": [],
                     "redTeam.curCodes": [],
+                    answerers: [],
+                    curEncrypterTeam: 'BLUE',
                 }
             }
         )

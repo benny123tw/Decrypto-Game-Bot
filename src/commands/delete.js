@@ -1,4 +1,3 @@
-const { parseInt } = require('lodash');
 const gameDB = require('../functions/gameDB');
 
 module.exports = {
