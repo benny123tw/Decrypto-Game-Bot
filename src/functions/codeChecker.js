@@ -20,21 +20,7 @@ const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, 
                     },
                 },
             );
-        }
-
-        // update all blue team career
-        await playerModel.updateMany(
-            {
-                team: "BLUE",
-                onGame: true
-            },
-            {
-                $inc: {
-                    total_Games: 1,
-                    wins: 1,
-                },
-            },
-        );              
+        }              
     }
 
     // RED TEAM
@@ -53,20 +39,6 @@ const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, 
                 },
             );
         }
-
-        // update all red team career
-        await playerModel.updateMany(
-            {
-                team: "RED",
-                onGame: true
-            },
-            {
-                $inc: {
-                    total_Games: 1,
-                    wins: 1,
-                },
-            },
-        );
     }
 
     // if blue team or red team isn't answer than just return message
@@ -74,6 +46,11 @@ const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, 
     if (!answerers.answerers.includes('RED') || !answerers.answerers.includes('BLUE')) {
         return false; 
     }
+
+    if (DB.player.team === 'BLUE') await playerModel.updateMany({ team: "BLUE", onGame: true, serverId: message.guild.id },
+        { $inc: { total_Games: 1, wins: 1, }, },);
+    if (DB.player.team === 'RED') await playerModel.updateMany({ team: "RED", onGame: true, serverId: message.guild.id },
+    { $inc: { total_Games: 1, wins: 1, }, },);
         
     // reset curcodes and answerers
     await gameModel.findOneAndUpdate({serverId: message.guild.id,},
@@ -98,19 +75,6 @@ const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger
                 },
             );
         }
-
-        await playerModel.updateMany(
-            {
-                team: "BLUE",
-                onGame: true
-            },
-            {
-                $inc: {
-                    total_Games: 1,
-                    loses: 1,
-                },
-            },
-        );
     }
 
     if (DB.player.team === 'RED') {
@@ -127,19 +91,6 @@ const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger
                 },
             );
         }
-
-        await playerModel.updateMany(
-            {
-                team: "RED",
-                onGame: true
-            },
-            {
-                $inc: {
-                    total_Games: 1,
-                    loses: 1,
-                },
-            },
-        );
     }
 
     // get the db data (will get data after switch team)
@@ -152,8 +103,7 @@ const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger
         message.react(`❌`);
         return false;
     }
-        
-
+    
     await gameModel.findOneAndUpdate(
         {
             serverId: message.guild.id,

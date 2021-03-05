@@ -21,7 +21,7 @@ module.exports = {
                 )
                 .setImage(message.author.avatarURL())
                 .setFooter(
-                    `Copyright ©️ 2021 Decrypto.`,
+                    `${bot.config.footer}`,
                 );
 
         message.reply(scoreEmbed);        

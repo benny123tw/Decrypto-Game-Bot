@@ -57,6 +57,7 @@ const configSchema = {
     defaultGame: { type: 'string', default: '$help for help' },
     prefix: { type: 'string', default: '$' },
     version: { type: 'string', default: '1.0.0' },
+    footer: { type: 'string', default: 'All works made with 🧡 by Benny Yen.'},
     defaultColors: {
         type: 'object',
         default: {
@@ -196,13 +197,14 @@ const createBot = initialConfig => {
             bot.log.info(`No config file found, generating...`);
             try {
                 mkdirp.sync(path.dirname(this.configFile));
-                const { token, name, author, prefix, version } = initialConfig;
+                const { token, name, author, prefix, version, footer } = initialConfig;
                 const baseConfig = {
                     token,
                     prefix,
                     name,
                     author,
                     version,
+                    footer,
                 };
                 fs.writeFileSync(this.configFile, JSON.stringify(baseConfig, null, 4));
             } catch (err) {

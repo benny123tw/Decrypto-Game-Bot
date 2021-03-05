@@ -62,7 +62,7 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
         { name: '\u200B', value: '\u200B' },
     )
     .setFooter(
-        `All works made with ❤️ by ${bot.config.author}`,
+        `${bot.config.footer}`,
     );
 
     /**
@@ -96,7 +96,7 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
-                    `All works made with ❤️ by ${bot.config.author}`,
+                    `${bot.config.footer}`,
                 );
                 reaction.message.edit(newEmbed);
             });
@@ -122,7 +122,7 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
-                    `All works made with ❤️ by ${bot.config.author}`,
+                    `${bot.config.footer}`,
                 );
                 reaction.message.edit(newEmbed);
             });
@@ -191,7 +191,7 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
-                    `Copyright ©️ 2021 Decrypto. All right Reversed.`,
+                    `${bot.config.footer}`,
                 );
                 message.channel.send(newEmbed);
             });
@@ -315,7 +315,7 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData ) =
             { name: '\u200B', value: '\u200B' },
         )
         .setFooter(
-            `All works made with ❤️ by ${bot.config.author}`,
+            `${bot.config.footer}`,
         );
         messageEmbed.delete();
         blueTeamID.forEach(async id => {

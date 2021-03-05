@@ -68,7 +68,7 @@ module.exports = {
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
-                    `Copyright ©️ 2021 Decrypto. All right Reversed.`,
+                    `${bot.config.footer}`,
                 );
             return await message.channel.send(keyEmbed).then(msg => msg.pin());
         }
@@ -114,7 +114,7 @@ module.exports = {
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
-                    `Copyright ©️ 2021 Decrypto. All right Reversed.`,
+                    `${bot.config.footer}`,
                 );
             return message.author.send(codeEmbed)
         }
