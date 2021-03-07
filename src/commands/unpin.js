@@ -1,4 +1,4 @@
-const gameDB = require('../functions/gameDB');
+const gameModel = require('../models/gameSchema');
 
 module.exports = {
     name: 'unpin',

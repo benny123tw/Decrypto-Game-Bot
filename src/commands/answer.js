@@ -49,11 +49,11 @@ module.exports = {
                     },
                     $set: {
                         "blueTeam.encrypterId": "",
-                        "blueTeam.curCodes": []
+                        "blueTeam.curCodes": [],
+                        answerers: []
                     }
                 }
             )
-            
             return message.reply(`Why you cheating huh?`);
         }
 
@@ -72,7 +72,8 @@ module.exports = {
                     },
                     $set: {
                         "redTeam.encrypterId": "",
-                        "redTeam.curCodes": []
+                        "redTeam.curCodes": [],
+                        answerers: []
                     }
                 }
             )
@@ -170,19 +171,14 @@ module.exports = {
          */
         if (gameData.curEncrypterTeam === 'BLUE' && gameData.answerers.includes('RED') 
             && gameData.answerers.includes('BLUE')) {
+                console.log(`BLUE to RED`)
                 await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "RED"}});
             }            
 
         if (gameData.curEncrypterTeam === 'RED' && gameData.answerers.includes('RED') 
             && gameData.answerers.includes('BLUE')) {
-
+                console.log(`RED to BLUE`)
             await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "BLUE"}});  
-            
-            /**
-             * Check if there have 2 tokens 
-             */
-            const server = await gameModel.findOne({ serverId: message.guild.id });
-
 
             /**
              *  there are 8 conditions to deal with
@@ -194,15 +190,18 @@ module.exports = {
              *  next we will checking the normal w/l conditions
              *  then do the normal fn
              */
+            const server = await gameModel.findOne({ serverId: message.guild.id });
 
             if ((server.blueTeam.intToken === 2 && server.blueTeam.misToken === 2)
                 || (server.redTeam.intToken === 2 && server.redTeam.misToken === 2)) {
-                    //do smthing tie fn
+                //do smthing tie fn
+                roundChecker.tie({ message, bot, logger, Discord }, DB, server);
             }
 
             else if ((server.blueTeam.intToken === 2 && server.redTeam.intToken === 2)
                     || server.blueTeam.intToken === 2 && server.redTeam.intToken === 2) {
                 //do smthing tie fn
+                roundChecker.tie({ message, bot, logger, Discord }, DB, server);    
             }
 
             // else if (rounds > 8) { // do tie fn}
@@ -210,115 +209,58 @@ module.exports = {
             // win / lose handler
             if (server.blueTeam.intToken === 2) {
                 // do win lose fn
+                // roundChecker.winLose({ message, bot, logger, Discord }, DB, server);
+                logger.modules(`${chalk.blueBright(`Blue`)} Team win!`);
+
+                await playerModel.findOneAndUpdate(
+                    { curServerId: message.guild.id, team: 'BLUE' }, 
+                    { $inc: { total_Games: 1, wins: 1}});
+                await roundChecker.reset(message, bot);
             }
 
             if (server.blueTeam.misToken === 2) {
                 // do win lose fn
+                // roundChecker.winLose({ message, bot, logger, Discord }, DB, server);
+                logger.modules(`${chalk.blueBright(`Blue`)} Team lose!`);
+                await playerModel.findOneAndUpdate(
+                    { curServerId: message.guild.id, team: 'BLUE' }, 
+                    { $inc: { total_Games: 1, loses: 1}});
+                await roundChecker.reset(message, bot);
             }
 
             if (server.redTeam.intToken === 2) {
                 //do win lose fn
+                // roundChecker.winLose({ message, bot, logger, Discord }, DB, server);
+                logger.modules(`${chalk.redBright(`Red`)} Team win!`);
+                await playerModel.findOneAndUpdate(
+                    { curServerId: message.guild.id, team: 'RED' }, 
+                    { $inc: { total_Games: 1, wins: 1}});
+                await roundChecker.reset(message, bot);
             }
 
-            if (server.redTeam.intToken === 2) {
+            if (server.redTeam.misToken === 2) {
                 // do win lose fn
-            }
+                // roundChecker.winLose({ message, bot, logger, Discord }, DB, server);
+                logger.modules(`${chalk.redBright(`Red`)} Team lose!`);
+                await playerModel.findOneAndUpdate(
+                    { curServerId: message.guild.id, team: 'RED' }, 
+                    { $inc: { total_Games: 1, loses: 1}});
+                await roundChecker.reset(message, bot);
+            }       
 
-            
-            // if any token > 2 then do win/lose checker
-            if (server.blueTeam.intToken >= 2 || server.blueTeam.misToken >= 2 ||
-                server.redTeam.intToken >= 2 || server.redTeam.misToken >= 2) {
-
-                // blue team and red team not tie then
-                // blue team win = red team loose
-                if (server.blueTeam.intToken >= 2 && server.redTeam.intToken < 2) {
-                    logger.modules(`${chalk.blueBright(`Blue`)} Team win!`);
-
-                    await playerModel.updateMany({ team: "BLUE", onGame: true, serverId: message.guild.id },
-                    { $inc: { total_Games: 1, wins: 1, }, },);
-
-                    await playerModel.updateMany({ team: "RED", onGame: true, serverId: message.guild.id },
-                    { $inc: { total_Games: 1, loses: 1, }, },);
-                }
-
-                // blue team and red team not tie then
-                // blue team win = red team loose
-                else if (server.redTeam.intToken >= 2 && server.blueTeam.intToken < 2) {
-                    logger.modules(`${chalk.redBright(`Red`)} Team win!`);
-
-                    await playerModel.updateMany({ team: "RED", onGame: true, serverId: message.guild.id },
-                    { $inc: { total_Games: 1, wins: 1, }, },);
-
-                    await playerModel.updateMany({ team: "BLUE", onGame: true, serverId: message.guild.id },
-                    { $inc: { total_Games: 1, loses: 1, }, },);
-                }
-                    
-                // when blue team and red team tie
-                if ((server.blueTeam.intToken === server.redTeam.intToken && server.blueTeam.intToken >= 2)
-                    || (server.blueTeam.misToken === server.redTeam.misToken && server.blueTeam.misToken >= 2)) {
-
-                    let blueTeamScore = server.blueTeam.intToken - server.blueTeam.misToken;
-                    let redTeamScore = server.redTeam.intToken - server.redTeam.misToken;
-
-                    if (blueTeamScore > redTeamScore) {
-                        logger.modules(`${chalk.blueBright(`Blue`)} Team win!`);
-
-                        await playerModel.updateMany({ team: "BLUE", onGame: true, serverId: message.guild.id },
-                        { $inc: { total_Games: 1, wins: 1, }, },);
-
-                        await playerModel.updateMany({ team: "RED", onGame: true, serverId: message.guild.id },
-                        { $inc: { total_Games: 1, loses: 1, }, },);
-                    } 
-
-                    if (redTeamScore > blueTeamScore) {
-                        logger.modules(`${chalk.redBright(`Red`)} Team win!`);
-
-                        await playerModel.updateMany({ team: "RED", onGame: true, serverId: message.guild.id },
-                        { $inc: { total_Games: 1, wins: 1, }, },);
-
-                        await playerModel.updateMany({ team: "BLUE", onGame: true, serverId: message.guild.id },
-                        { $inc: { total_Games: 1, loses: 1, }, },);
-                    }
-
-                    logger.modules(`${chalk.redBright(`Red`)} Team and ${chalk.redBright(`Blue`)} Team both win!`);
-                    
-                }
-            }            
+            await gameModel.findOneAndUpdate({serverId: message.guild.id},
+                {"blueTeam.curCodes": [], "redTeam.curCodes": []});
         }
             
         gameData = await gameModel.findOne({serverId: message.guild.id});
         /**
          * Sending `reset codes` message to both channels and show the current tokens each team
          */
-        message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team** round!`);
-        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team** round!`);       
+        message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
+        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);       
 
         // reset answerers
-        await gameModel.findOneAndUpdate({ serverId: message.guild.id }, { $set: {answerers: []}});
-
-        //unpin all bot's pinned message
-        bot.commands.get(`unpin`).execute({ message, args, cmd, bot, logger, Discord }, DB);
-
-        //reset all game elem 
-        await gameModel.findOneAndUpdate(
-            {
-                serverId: message.guild.id,
-            },
-            {
-                $set: {
-                    "blueTeam.keywords": [],
-                    "redTeam.keywords": [],
-                    "blueTeam.intToken": 0,
-                    "blueTeam.misToken": 0,
-                    "redTeam.intToken": 0,
-                    "redTeam.misToken": 0,
-                    "blueTeam.encrypterId": '',
-                    "redTeam.encrypterId": '',
-                    "blueTeam.curCodes": [],
-                    "redTeam.curCodes": [],
-                    answerers: [],
-                }
-            }
-        )
+        await gameModel.findOneAndUpdate({ serverId: message.guild.id }, 
+            { $set: {answerers: [],}});
     },
 };

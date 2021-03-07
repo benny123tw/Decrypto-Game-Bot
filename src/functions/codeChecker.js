@@ -6,7 +6,7 @@ const chalk = require('chalk');
 const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, Discord }, DB) => {
     // BLUE TEAM
     if (DB.player.team === 'BLUE') {
-
+        console.log(`ans: BLUE`)
         // if encrypter team is RED than increase blue team's interception token
         if (encrypter && encrypter.team === 'RED') {
             logger.modules(`${chalk.blueBright(`Blue`)} team got ${chalk.greenBright(`Interception Token`)}!`);
@@ -25,6 +25,7 @@ const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, 
 
     // RED TEAM
     if (DB.player.team === 'RED') {
+        console.log(`ans: RED`)
         // if encrypter team is BLUE than increase red team's interception token
         if (encrypter && encrypter.team === 'BLUE') {
             logger.modules(`${chalk.red(`Red`)} team got ${chalk.greenBright(`Interception Token`)}!`);
@@ -43,18 +44,11 @@ const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, 
 
     // if blue team or red team isn't answer than just return message
     let answerers = await gameModel.findOne({ serverId: message.guild.id });
+    console.log(`current answerers: ${answerers.answerers}`);
     if (!answerers.answerers.includes('RED') || !answerers.answerers.includes('BLUE')) {
         return false; 
     }
 
-    if (DB.player.team === 'BLUE') await playerModel.updateMany({ team: "BLUE", onGame: true, serverId: message.guild.id },
-        { $inc: { total_Games: 1, wins: 1, }, },);
-    if (DB.player.team === 'RED') await playerModel.updateMany({ team: "RED", onGame: true, serverId: message.guild.id },
-    { $inc: { total_Games: 1, wins: 1, }, },);
-        
-    // reset curcodes and answerers
-    await gameModel.findOneAndUpdate({serverId: message.guild.id,},
-        {$set: {curCodes: [], answerers: [],}});
     message.react(`✅`);
     return true;
 }
@@ -62,6 +56,7 @@ const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, 
 const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger, Discord }, DB) => {
 
     if (DB.player.team === 'BLUE') {
+        console.log(`ans: BLUE`)
         if (encrypter && encrypter.team === 'BLUE') {
             logger.modules(`${chalk.blueBright(`Blue`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);
         await gameModel.findOneAndUpdate(
@@ -78,6 +73,7 @@ const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger
     }
 
     if (DB.player.team === 'RED') {
+        console.log(`ans: RED`)
         if (encrypter && encrypter.team === 'RED') {
         logger.modules(`${chalk.redBright(`Red`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);
             await gameModel.findOneAndUpdate(
@@ -103,17 +99,6 @@ const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger
         message.react(`❌`);
         return false;
     }
-    
-    await gameModel.findOneAndUpdate(
-        {
-            serverId: message.guild.id,
-        },
-        {
-            $set: {
-                curCodes: [],
-            },
-        },
-    );
 
     message.react(`❌`);
     if (gameData.curEncrypterTeam === 'BLUE')

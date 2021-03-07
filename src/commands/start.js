@@ -197,8 +197,8 @@ module.exports = {
        /**
          * Sending `reset codes` message to both channels and show the current tokens each team
          */
-        message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team** round!`);
-        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team** round!`);
+        message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
+        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
       
     },
 };

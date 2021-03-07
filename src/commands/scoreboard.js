@@ -17,7 +17,7 @@ module.exports = {
                     { name: 'Wins', value: `${DB.player.wins}`, inline: true},
                     { name: `Loses`, value: `${DB.player.loses}`, inline: true },
                     { name: `W/L rate`, value: `${winrate}%`, inline: true },
-                    { name: 'Cheats times', value: `${DB.player.cheats}` },
+                    { name: 'Cheating times', value: `${DB.player.cheats}` },
                 )
                 .setImage(message.author.avatarURL())
                 .setFooter(
