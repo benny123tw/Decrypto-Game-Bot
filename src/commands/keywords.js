@@ -1,0 +1,131 @@
+const gameDB = require('../functions/gameDB');
+const gameModel = require('../models/gameSchema');
+
+module.exports = {
+    name: 'keywords',
+    aliases: ['keyword', 'list keywords', 'kw'],
+    permissions: ['ADMINISTRATOR', 'MANAGE_CHANNELS'],
+    description: 'Keywords Query, Update, Delete, Add, \`$help keywords\` for more help',
+    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+        /**
+         * get player Data from DB and handle Promise object.
+         */
+        let gameData;
+        await gameDB(bot, logger, message)
+            .then(result => (gameData = result))
+            .catch(err => console.log(err));
+        let arr = gameData.keywords;
+
+        /**
+         * using $kw a keyword (index) to add/insert keyword
+         */
+        const addAliases = ['add', 'a'];
+        if (addAliases.includes(args[0])) {
+            if (!args[1]) return message.reply(`Please follow this syntax \`$kw a (keyword) index(option)\``);
+            
+            if (args[2])
+                arr.splice(args[2], 0, args[1]);
+            else
+                arr.push(args[1]);
+
+            gameData = await gameModel.findOneAndUpdate(
+                {
+                    serverId: message.guild.id
+                },
+                {
+                    $set: {
+                        keywords: arr
+                    }
+                },
+                {
+                    new: true
+                }
+            );
+        }
+        
+        /**
+         * using $kw d (index || keyword) to del keyword
+         */
+        const delAliases = ['delete', 'del', 'd'];
+        if (delAliases.includes(args[0])) {
+
+            if (!args[1]) return message.reply(`Please follow this syntax \`$kw d (index || keyword)\``);
+            
+            if (isNaN(args[1])) {
+                for (let i=0; i<arr.length; i++) {
+                    if (args[1] === arr[i]) {
+                        arr.splice(arr.indexOf(args[1]), 1);
+                        break;
+                    }
+                }
+
+                gameData = await gameModel.findOneAndUpdate(
+                    {
+                        serverId: message.guild.id
+                    },
+                    {
+                        $set: {
+                            keywords: arr
+                        }
+                    },
+                    {
+                        new: true
+                    }
+                )
+
+            }
+
+            if (!isNaN(args[1])) {
+                arr.splice(args[1],1);
+
+                gameData = await gameModel.findOneAndUpdate(
+                    {
+                        serverId: message.guild.id
+                    },
+                    {
+                        $set: {
+                            keywords: arr
+                        }
+                    },
+                    {
+                        new: true
+                    }
+                )                
+            }
+
+        }
+
+        /**
+         *  update keywords $kw u (index) (keyword)
+         */
+        const updateAliases = ['update', 'u'];
+        if (updateAliases.includes(args[0])) {
+
+            if (isNaN(args[1]) || !args[2]) 
+                return message.reply(`Please follow this syntax \`$kw u (index) (keyword)\``);
+
+            arr[args[1]] = args[2];
+
+            gameData = await gameModel.findOneAndUpdate(
+                {
+                    serverId: message.guild.id
+                },
+                {
+                    $set: {
+                        keywords: arr
+                    }
+                },
+                {
+                    new: true
+                }
+            )
+        }
+        
+        let list = '';
+        for (let i=0; i<arr.length; i++) {
+            list += `${i+1}.  ${arr[i]}\n` 
+        }
+
+        return message.channel.send(`${list}`);
+    },
+};
