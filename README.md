@@ -10,7 +10,7 @@ Playing decrypto board game on discord!
 - [x] Embed keywords and pin it.
 - [x] Sending answer will automatic add reaction on it. (Correct :white_check_mark: or Incorrect :x:)
 - [x] Design the game system based on original [Game Rules](https://www.gokids.com.tw/tsaiss/gokids/rules/DECRYPTO_EN_RULES_09nov2017.pdf "game rules").
-- [ ] Scalable keywords
+- [x] Scalable keywords
 - [ ] Assign encrypter to palyer every round.
 - [ ] Encrypter sending their descriptions to bot(PM) will store the descriptions data and passing to both game text channels.
 - [ ] Check if encrypter's description is repeat.
