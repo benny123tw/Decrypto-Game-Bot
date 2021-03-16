@@ -2,6 +2,7 @@ const chalk = require('chalk');
 const gameDB = require('../functions/gameDB');
 const gameModel = require('../models/gameSchema');
 const distribute = require('../functions/distribute');
+const playerModel = require('../models/playerSchema');
 
 module.exports = {
     name: 'start',
@@ -9,6 +10,32 @@ module.exports = {
     permissions: [],
     description: 'start the decrypto game! (normal / random)',
     async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+
+        /**
+         *  init options object
+         */
+        let options = {
+            gameMode: 'normal',
+            autoAssign: false,
+            // blueTeamFirstEncrypter: null, 
+            // redTeamFirstEncrypter: null, 
+        };
+
+        // check if player set gamemode to random(default: normal)
+        if (args[0] === 'random') options.gameMode = 'random';
+
+        for (const arg of args) {
+            if (!arg.startsWith('-')) continue;
+            
+                if (arg.endsWith('auto') || arg.endsWith('a')) options.autoAssign = true;
+                // if (options.autoAssign && message.mentions.users)                 
+                //     options.blueTeamFirstEncrypter = message.mentions.users.first();
+                // if (options.autoAssign && message.mentions.users)                 
+                //     options.redTeamFirstEncrypter = message.mentions.users.last();
+        }
+
+
+
         /**
          * get player Data from DB and handle Promise object.
          */
@@ -177,28 +204,49 @@ module.exports = {
         
         // update new rooms to DB
         if(roomResult.includes(false))
-            await gameModel.findOneAndUpdate({
+            gameData = await gameModel.findOneAndUpdate({
                 serverId: message.guild.id
             }, {
                     $set: {
                         gameRooms: gameData.gameRooms,
                     },            
-            }).then(logger.info(chalk.greenBright(`Update gameRooms ${chalk.cyan(gameData.gameRooms)} to database`)))
+            },{new: true}).then(logger.info(chalk.greenBright(`Update gameRooms ${chalk.cyan(gameData.gameRooms)} to database`)))
             .catch(error => logger.error(chalk.red(error)));
+
+        await message.guild.channels.cache.get(gameData.gameRooms[1])
+            .updateOverwrite(
+                message.guild.roles.cache.get(gameData.gameRoles[0]),
+                {
+                    VIEW_CHANNEL: true
+                }
+            )
+        await message.guild.channels.cache.get(gameData.gameRooms[2])
+            .updateOverwrite(
+                message.guild.roles.cache.get(gameData.gameRoles[1]),
+                {
+                    VIEW_CHANNEL: true
+                }
+            )
 
         // message.channel.send(`Game initialization completed.`);
         
-        if (args[0] === 'random')
-            distribute.randomDistribute({ message, args, cmd, bot, logger, Discord }, gameData);
-        if (!args[0] || !isNaN(args[0]))
-            distribute.normal({ message, args, cmd, bot, logger, Discord }, gameData);
+        if (options.gameMode === 'random') 
+            distribute.randomDistribute({ message, args, cmd, bot, logger, Discord }, gameData,  options);
+        if (options.gameMode === 'normal')
+            distribute.normal({ message, args, cmd, bot, logger, Discord }, gameData, options);
         // distribute.test({ message, args, cmd, bot, logger, Discord }, gameData);
         
        /**
          * Sending `reset codes` message to both channels and show the current tokens each team
          */
         message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
-        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
-      
+        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);    
+
+        await gameModel.findOneAndUpdate(
+            { serverId: message.guild.id },
+            { $set: { options: options } }
+        );
     },
 };
+
+

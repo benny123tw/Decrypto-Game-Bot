@@ -5,6 +5,7 @@ const gameDB = require('../../functions/gameDB');
 const gameModel = require('../../models/gameSchema');
 
 module.exports = async (bot, Discord, logger, message) => {
+    
     /**
      * We ignore everyBot message.
      * this function has to be here, cause we don't want bot generate the player data.

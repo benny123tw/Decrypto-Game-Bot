@@ -16,11 +16,11 @@ module.exports = {
         gameData.gameRooms.forEach(room => {
             if (bot.client.channels.cache.get(room) != undefined)
                 bot.client.channels.cache.get(room).delete();
-        })
+        });
         // console.log(bot.client.guilds.cache.get(DB.server.serverID).roles.cache)
         gameData.gameRoles.forEach(role => {
             if (bot.client.guilds.cache.get(DB.server.serverID).roles.cache.get(role) != undefined)
             bot.client.guilds.cache.get(DB.server.serverID).roles.cache.get(role).delete();
-        })         
+        });         
     },
 };
