@@ -30,6 +30,10 @@ const gameSchema = new mongoose.Schema({
         curCodes: { type: Array, default: [] },
         encrypterId: { type: String, default: ''},
     } },
+    options: { type:JSON, default: {
+        gameMode: { type:String, default: "normal" },
+        autoAssign: { type: Boolean, default: false },
+    }}
 });
 
 const model = mongoose.model('Games', gameSchema);

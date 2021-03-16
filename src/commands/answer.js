@@ -250,6 +250,8 @@ module.exports = {
 
             await gameModel.findOneAndUpdate({serverId: message.guild.id},
                 {"blueTeam.curCodes": [], "redTeam.curCodes": []});
+
+            autoAssign(message, bot, Discord, options); // random encrypter (repeat)
         }
             
         gameData = await gameModel.findOne({serverId: message.guild.id});
@@ -257,10 +259,59 @@ module.exports = {
          * Sending `reset codes` message to both channels and show the current tokens each team
          */
         message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
-        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);       
+        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);    
+        
 
         // reset answerers
         await gameModel.findOneAndUpdate({ serverId: message.guild.id }, 
-            { $set: {answerers: [],}});
+            { $set: {answerers: []}});
     },
 };
+
+const autoAssign = async (message, bot, Discord, options) => {
+    if (options.autoAssign) {
+        let encrypterArray = [];
+        // random pick 1 player from each team 
+        //blue
+        let randomUserBlueTeam = await playerModel.find({
+            curServerId: message.guild.id, 
+            team: "BLUE"
+        });
+        let index = Math.floor(Math.random() * randomUserBlueTeam.length);
+        encrypterArray[0] = randomUserBlueTeam[index].playerId;
+
+        // red
+        let randomUserRedTeam = await playerModel.find({
+            curServerId: message.guild.id, 
+            team: "RED"
+        });
+
+        index = Math.floor(Math.random() * randomUserRedTeam.length);
+        encrypterArray[1] = randomUserRedTeam[index].playerId;
+
+        await gameModel.findOneAndUpdate({serverId: message.guild.id},
+            {$set:{"blueTeam.encrypterId": encrypterArray[0], 
+                    "redTeam.encrypterId": encrypterArray[1]}},{new: true})
+                .then(result =>{
+                    const bt_encrypter = new Discord.MessageEmbed().setColor('#e42643')
+                    .setTitle('Blue Team Encrypter')
+                    .setDescription(`${message.guild.members.cache.get(result.blueTeam.encrypterId).nickname} is current encrypter!`)
+                    .setThumbnail(message.guild.members.cache.get(result.blueTeam.encrypterId).user.avatarURL())
+                    .setFooter(
+                        `${bot.config.footer}`
+                    );
+    
+                    const rt_encrypter = new Discord.MessageEmbed().setColor('#e42643')
+                    .setTitle('Blue Team Encrypter')
+                    .setDescription(`${message.guild.members.cache.get(result.redTeam.encrypterId).nickname} is current encrypter!`)
+                    .setThumbnail(message.guild.members.cache.get(result.redTeam.encrypterId).user.avatarURL())
+                    .setFooter(
+                        `${bot.config.footer}`
+                    );
+    
+    
+                    message.client.channels.cache.get(result.gameRooms[1]).send(bt_encrypter);
+                    message.client.channels.cache.get(result.gameRooms[2]).send(rt_encrypter);
+                });
+    }
+}

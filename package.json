@@ -1,7 +1,7 @@
 {
   "name": "decrypto",
-  "version": "1.2.0",
-  "description": "Automatic thumbs up every messages! Feel free to join it.",
+  "version": "0.9.5a",
+  "description": "Decrypto board game on Discord",
   "author": "Benny Yen",
   "license": "MIT",
   "main": "src/index.js",

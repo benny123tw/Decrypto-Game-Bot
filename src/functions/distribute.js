@@ -1,4 +1,5 @@
 const playerModel = require('../models/playerSchema');
+const gameModel = require('../models/gameSchema');
 
 /**
  * shuffle the array using random pointer
@@ -34,14 +35,64 @@ const test = ({ message, args, cmd, bot, logger, Discord }, gameData) => {
     message.channel.send(`Team 2 \n ${leftSide}`);
 }
 
+const autoAssign = async (message, bot, Discord, options) => {
+    if (options.autoAssign) {
+        let encrypterArray = [];
+        // random pick 1 player from each team 
+        //blue
+        let randomUserBlueTeam = await playerModel.find({
+            curServerId: message.guild.id, 
+            team: "BLUE"
+        });
+
+        let index = Math.floor(Math.random() * randomUserBlueTeam.length);
+        encrypterArray[0] = randomUserBlueTeam[index].playerId;
+
+        // red
+        let randomUserRedTeam = await playerModel.find({
+            curServerId: message.guild.id, 
+            team: "RED"
+        });
+
+        index = Math.floor(Math.random() * randomUserRedTeam.length);
+        encrypterArray[1] = randomUserRedTeam[index].playerId;
+
+        await gameModel.findOneAndUpdate({serverId: message.guild.id},
+            {$set:{"blueTeam.encrypterId": encrypterArray[0], 
+                    "redTeam.encrypterId": encrypterArray[1]}}, {new: true})
+            .then(result =>{
+                const bt_encrypter = new Discord.MessageEmbed().setColor('#e42643')
+                .setTitle('Blue Team Encrypter')
+                .setDescription(`${message.guild.members.cache.get(result.blueTeam.encrypterId).nickname} is current encrypter!`)
+                .setThumbnail(message.guild.members.cache.get(result.blueTeam.encrypterId).user.avatarURL())
+                .setFooter(
+                    `${bot.config.footer}`
+                );
+
+                const rt_encrypter = new Discord.MessageEmbed().setColor('#e42643')
+                .setTitle('Blue Team Encrypter')
+                .setDescription(`${message.guild.members.cache.get(result.redTeam.encrypterId).nickname} is current encrypter!`)
+                .setThumbnail(message.guild.members.cache.get(result.redTeam.encrypterId).user.avatarURL())
+                .setFooter(
+                    `${bot.config.footer}`
+                );
+
+
+                message.client.channels.cache.get(result.gameRooms[1]).send(bt_encrypter);
+                message.client.channels.cache.get(result.gameRooms[2]).send(rt_encrypter);
+            });
+    }
+}
+
 /**
  * random team maker
  * react to join the team
  * $start random [participate quantity] to set max
  * @param {Object} serverObject 
  * @param {Object} gameData 
+ * @param {Object} options
  */
-const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, gameData ) => {
+const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, gameData, options ) => {
     // check arguments 2 is number
     if (isNaN(args[1])) return message.reply(`Please Enter the number`);
     if (!args[1]) return message.reply(`Please Enter hwo many players will join`);
@@ -194,6 +245,8 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                     `${bot.config.footer}`,
                 );
                 message.channel.send(newEmbed);
+
+                autoAssign(message, bot, Discord ,options);
             });
         })
 
@@ -206,8 +259,13 @@ const deleteMessage = (message) => {
     .catch(console.error);
 }
 
-// using react role to distribute
-const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData ) => {
+/**
+ * using react role to distribute
+ * @param {Object} serverObject
+ * @param {Object} gameData
+ * @param {Object} options
+ */
+const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData, options ) => {
     const channel = message.channel.id;
     const blueTeamRole = gameData.gameRoles[0];
     const redTeamRole = gameData.gameRoles[1];
@@ -347,8 +405,9 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData ) =
                 },
             );
         });
-        return message.channel.send(newEmbed)
-    }, 5000);
+        message.channel.send(newEmbed);
+        autoAssign(message, bot, Discord, options);
+    }, 10000);
 };
 
 module.exports = {
