@@ -228,12 +228,17 @@ module.exports = {
                 }
             )
 
+        gameData = await gameModel.findOneAndUpdate(
+            { serverId: message.guild.id },
+            { $set: { options: options } },{new: true}
+        );
+
         // message.channel.send(`Game initialization completed.`);
         
         if (options.gameMode === 'random') 
-            distribute.randomDistribute({ message, args, cmd, bot, logger, Discord }, gameData,  options);
+            distribute.randomDistribute({ message, args, cmd, bot, logger, Discord }, gameData);
         if (options.gameMode === 'normal')
-            distribute.normal({ message, args, cmd, bot, logger, Discord }, gameData, options);
+            distribute.normal({ message, args, cmd, bot, logger, Discord }, gameData);
         // distribute.test({ message, args, cmd, bot, logger, Discord }, gameData);
         
        /**
@@ -241,11 +246,6 @@ module.exports = {
          */
         message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
         message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);    
-
-        await gameModel.findOneAndUpdate(
-            { serverId: message.guild.id },
-            { $set: { options: options } }
-        );
     },
 };
 

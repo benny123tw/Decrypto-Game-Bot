@@ -18,6 +18,7 @@ module.exports = {
             intToken: 0,
             misToken: 0,
             encrypterId: "",
+            encryptersList: [],
             curCodes: [],
         }
 
