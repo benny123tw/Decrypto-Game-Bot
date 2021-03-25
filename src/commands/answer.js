@@ -48,7 +48,6 @@ module.exports = {
                         cheats: 1,
                     },
                     $set: {
-                        "blueTeam.encrypterId": "",
                         "blueTeam.curCodes": [],
                         answerers: []
                     }
@@ -71,7 +70,6 @@ module.exports = {
                         cheats: 1,
                     },
                     $set: {
-                        "redTeam.encrypterId": "",
                         "redTeam.curCodes": [],
                         answerers: []
                     }
@@ -248,10 +246,11 @@ module.exports = {
                 await roundChecker.reset(message, bot);
             }       
 
-            await gameModel.findOneAndUpdate({serverId: message.guild.id},
-                {"blueTeam.curCodes": [], "redTeam.curCodes": []});
-
-            autoAssign(message, bot, Discord, options); // random encrypter (repeat)
+            gameData = await gameModel.findOneAndUpdate({serverId: message.guild.id},
+                {"blueTeam.curCodes": [], "redTeam.curCodes": []},{new: true});
+            
+            if (gameData.options.autoAssign)
+                autoAssign(message, bot, Discord); // random encrypter (repeat)
         }
             
         gameData = await gameModel.findOne({serverId: message.guild.id});
@@ -268,8 +267,7 @@ module.exports = {
     },
 };
 
-const autoAssign = async (message, bot, Discord, options) => {
-    if (options.autoAssign) {
+const autoAssign = async (message, bot, Discord) => {
         let encrypterArray = [];
         // random pick 1 player from each team 
         //blue
@@ -313,5 +311,4 @@ const autoAssign = async (message, bot, Discord, options) => {
                     message.client.channels.cache.get(result.gameRooms[1]).send(bt_encrypter);
                     message.client.channels.cache.get(result.gameRooms[2]).send(rt_encrypter);
                 });
-    }
 }

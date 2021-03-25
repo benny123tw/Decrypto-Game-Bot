@@ -7,6 +7,7 @@ module.exports = {
     description: 'Ping! Pong?',
     async execute({ message, args, cmd, bot, logger, Discord }, DB) {
         const delay = Date.now() - message.createdAt;
-        message.reply(`**pong** *(delay: ${delay}ms)*`);        
+        message.reply(`**pong** *(delay: ${delay}ms)*`); 
+        console.log(message.guild.members.cache.get(message.author.id).user.username);
     },
 };
