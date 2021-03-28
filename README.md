@@ -13,7 +13,7 @@ Playing decrypto board game on discord!
 - [x] Scalable keywords
 - [x] Assign encrypter to palyer every round.
 	- [x] random with repeat
-	- [ ] random with no repeat
+	- [x] random with no repeat
 - [ ] Encrypter sending their descriptions to bot(PM) will store the descriptions data and passing to both game text channels.
 - [ ] Check if encrypter's description is repeat.
 - [ ] Create 3 voice channel. 1 for players who are join. 2 for team.
