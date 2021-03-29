@@ -15,6 +15,7 @@ const playerSchema = new mongoose.Schema({
     wins: { type: Number, default: 0 },
     loses: { type: Number, default: 0 },
     cheats: { type: Number, default: 0},
+    onCustomer: { type: Boolean, default: false },
 });
 
 const model = mongoose.model('Players', playerSchema);

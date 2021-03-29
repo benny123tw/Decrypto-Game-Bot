@@ -1,16 +1,21 @@
 const chalk = require('chalk');
 const playerDB = require('../../functions/playerDB');
 const decryptoDB = require('../../functions/serverDB');
+const DM = require('../../functions/DM');
 const gameDB = require('../../functions/gameDB');
 const gameModel = require('../../models/gameSchema');
 
 module.exports = async (bot, Discord, logger, message) => {
-    
+
     /**
-     * We ignore everyBot message.
+     * ignore every Bots message.
      * this function has to be here, cause we don't want bot generate the player data.
      */
     if (message.author.bot) return;
+
+    // customer service sketch
+    if (message.author.id === '262961005137494017'
+    && message.channel.id === '826027115119116318') DM.sendDMtoUser({bot, Discord, logger, message});
 
     /**
      * get player Data from DB and handle Promise object.
@@ -20,6 +25,21 @@ module.exports = async (bot, Discord, logger, message) => {
         .then(result => (playerData = result))
         .catch(err => console.log(err));
     if (!playerData || playerData === undefined) return;
+
+    /**
+     * DM channel caommands handlers
+     */
+     if (message.channel.type === 'dm') {
+        return DM.execute({
+            bot: bot,
+            Discord: Discord,
+            logger: logger,
+            message: message
+        }, {
+            user: playerData,
+        })
+    } 
+
 
     /**
      * get server Data from DB and handle Promise object.

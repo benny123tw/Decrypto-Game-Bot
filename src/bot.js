@@ -8,7 +8,7 @@ const opn = require('opn');
 const mkdirp = require('mkdirp');
 const jsonfile = require('jsonfile');
 
-const handlers = ['command_handler', 'event_handler'];
+const handlers = ['command_handler', 'event_handler', 'DM_handler'];
 const mongoose = require('mongoose');
 require('dotenv').config();
 
@@ -76,6 +76,7 @@ const createBot = initialConfig => {
         client: new discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] }),
         log: logger(initialConfig.tag || `[Bot ${initialConfig.index}]`),
         commands: new discord.Collection(),
+        DM_commands: new discord.Collection(),
         events: new discord.Collection(),
     };
 

@@ -10,16 +10,20 @@ Playing decrypto board game on discord!
 - [x] Embed keywords and pin it.
 - [x] Sending answer will automatic add reaction on it. (Correct :white_check_mark: or Incorrect :x:)
 - [x] Design the game system based on original [Game Rules](https://www.gokids.com.tw/tsaiss/gokids/rules/DECRYPTO_EN_RULES_09nov2017.pdf "game rules").
-- [x] Scalable keywords
+- [x] Scalable keywords (insert, view, edit, delete)
 - [x] Assign encrypter to palyer every round.
-	- [x] random with repeat
-	- [x] random with no repeat
+	- [x] ~~random with repeat~~
+	- [x] random with no repeat (loop)
 - [ ] Encrypter sending their descriptions to bot(PM) will store the descriptions data and passing to both game text channels.
+    - [x] DM execute commands (DM commands handler)
 - [ ] Check if encrypter's description is repeat.
 - [ ] Create 3 voice channel. 1 for players who are join. 2 for team.
 - [ ] Anti-cheat(Current encrypter not allow to tpye anything).
-	- [x] If encrypter type any words it will reset the codes and sending message to both game channels "someone cheating".
+	- [x] If encrypter type any words it will reset the codes and sending message to both game channels "@username cheating".
 	- [ ] Current encrypter will add temp muted role. that means can't type and speak in their team channels.
+- [ ] DM Help center.
+    - [x] sending cusotm DM to user with bot (id, content).
+    - [ ] navigation guide.
 - [x] Carrer
 - [ ] Economic system.
 	- [x] Bank system (deposite and draw money)
@@ -30,8 +34,8 @@ Playing decrypto board game on discord!
 
 - [Node.js](http://nodejs.org/)
 - [Discord](https://discordapp.com/) account
-- [MongoDB](https://www.mongodb.com/)
-- 3~8 players at least
+- [MongoDB](https://www.mongodb.com/) account and SRV
+- 4~8 players at least (current version doesn't support 3 players)
 
 ## Installation Steps
 

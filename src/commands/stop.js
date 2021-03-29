@@ -19,6 +19,12 @@ module.exports = {
             misToken: 0,
             encrypterId: "",
             encryptersList: [],
+            descriptions: {
+                _1: [],
+                _2: [],
+                _3: [],
+                _4: [],
+            },
             curCodes: [],
         }
 

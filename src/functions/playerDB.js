@@ -15,11 +15,11 @@ const playerDB = async (bot, logger, message) => {
     // player database init and finding
     let playerData;
     try {
-        playerData = await playerModel.findOne({ playerId: message.member.id });
+        playerData = await playerModel.findOne({ playerId: message.author.id });
         if (!playerData) {
             const player = await playerModel.create({
-                playerId: message.member.id,
-                playerName: message.member.user.username,
+                playerId: message.author.id,
+                playerName: message.author.username,
                 coins: 100,
                 total_Games: 0,
                 wins: 0,
@@ -27,7 +27,7 @@ const playerDB = async (bot, logger, message) => {
             });
             player.save();
             logger.info(chalk.redBright(`Didn't find data on db. Generating...`));
-            playerData = await playerModel.findOne({ playerId: message.member.id });
+            playerData = await playerModel.findOne({ playerId: message.author.id });
         }
     } catch (error) {
         logger.error(chalk.red(error));
