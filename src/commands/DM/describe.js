@@ -16,8 +16,17 @@ module.exports = {
         if (gameData.curEncrypterTeam !== user.team || (gameData.blueTeam.encrypterId !== user.playerId
             && gameData.redTeam.encrypterId !== user.playerId)) return message.reply('You are not encrypter!!');
 
-        if (args.length > 3)
-            args = message.content.slice(1).split(',');
+        // split message 
+        if (args.length > 3 || message.content.includes(',')) {
+            let argsArr = [];
+            let msgArr = message.content.slice(1+cmd.length).split(',');
+            msgArr.forEach(msg => {
+                let newMsg = msg.split(/ +/);
+                newMsg[0] === '' ? newMsg.shift() : newMsg;
+                argsArr.push(newMsg.join(' '));
+            })
+            args = argsArr;
+        }            
 
         if (args.length === 0 || args.length !== 3) return message.reply('Please enter 3 descriptions!');
 
