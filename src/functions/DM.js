@@ -24,7 +24,7 @@ const execute = async ({bot, Discord, logger, message}, {user}) => {
          */
         const command =
             bot.DM_commands.get(cmd) || bot.DM_commands.find(a => a.aliases && a.aliases.includes(cmd));
-
+        
         const server = {
             message: message,
             args: args,

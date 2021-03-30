@@ -123,10 +123,15 @@ module.exports = {
         /**
          * create rooms for game
          * make it private only gamers/moderators can see
-         * gameGooms @param {'CategoryID', 'TEAM1ID', 'TEAM2ID'}
-         * Categorry
-         *      |_blueteam
-         *      |_redteam
+         * gameRooms @param {'CategoryID', 'TEAM1ID', 'TEAM2ID'}
+         * Game-Categorry
+         *      |_Common-VoiceChannel
+         *      |_Blueteam
+         *          |_blueteam-textChannl
+         *          |_blueteam-voiceChannel
+         *      |_Redteam
+         *          |_redteam-textChannel
+         *          |_redteam-voiceChannel
          */
         let roomResult = [false, false, false];
         await message.guild.fetch()

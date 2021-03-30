@@ -14,9 +14,10 @@ Playing decrypto board game on discord!
 - [x] Assign encrypter to palyer every round.
 	- [x] ~~random with repeat~~
 	- [x] random with no repeat (loop)
-- [ ] Encrypter sending their descriptions to bot(PM) will store the descriptions data and passing to both game text channels.
+- [x] Encrypter sending their descriptions to bot(PM) will store the descriptions data and passing to both game text channels.
     - [x] DM execute commands (DM commands handler)
-- [ ] Check if encrypter's description is repeat.
+- [x] Check if encrypter's description is repeat.
+- [x] history commands list all descriptions.
 - [ ] Create 3 voice channel. 1 for players who are join. 2 for team.
 - [ ] Anti-cheat(Current encrypter not allow to tpye anything).
 	- [x] If encrypter type any words it will reset the codes and sending message to both game channels "@username cheating".
