@@ -181,7 +181,7 @@ module.exports = {
             gameData.gameRooms[rooms.blueTeamTextChannel] = channel_id;
         }
 
-        if (!roomResult[rooms.blueTeamvoiceChannel]) {
+        if (!roomResult[rooms.blueTeamVoiceChannel]) {
 
             const channel_id = await channelCreate('Blue Team - Voice Channel', {
                 type: 'voice',
