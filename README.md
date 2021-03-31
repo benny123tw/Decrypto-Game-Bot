@@ -4,6 +4,8 @@ Playing decrypto board game on discord!
 
 **All the system is based on [Decrypto Game Rules](https://www.gokids.com.tw/tsaiss/gokids/rules/DECRYPTO_EN_RULES_09nov2017.pdf "game rules").**
 
+[中文说明](https://github.com/benny123tw/Decrypto-Game-Bot/blob/master/language/zh-cn_README.md)
+
 ## To Do
 - [x] Automatic create 2 text channels and 2 roles for game.
 - [x] Normal and random grouping.

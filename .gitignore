@@ -62,3 +62,6 @@ typings/
 
 # IDE files
 .idea
+
+#audio files
+audio/
