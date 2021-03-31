@@ -3,6 +3,7 @@ const gameDB = require('../functions/gameDB');
 const gameModel = require('../models/gameSchema');
 const distribute = require('../functions/distribute');
 const playerModel = require('../models/playerSchema');
+const {channelCreate, rooms} = require('../functions/gameRooms');
 
 module.exports = {
     name: 'start',
@@ -123,88 +124,94 @@ module.exports = {
         /**
          * create rooms for game
          * make it private only gamers/moderators can see
-         * gameRooms @param {'CategoryID', 'TEAM1ID', 'TEAM2ID'}
-         * Game-Categorry
-         *      |_Common-VoiceChannel
-         *      |_Blueteam
-         *          |_blueteam-textChannl
-         *          |_blueteam-voiceChannel
-         *      |_Redteam
-         *          |_redteam-textChannel
-         *          |_redteam-voiceChannel
+         * Structure and index: 
+         * Game-Categorry -0
+         *      |_blueteam-textChannl -1
+         *      |_redteam-textChannel -2
+         *      |_Common-voiceChannel -3
+         *      |_blueteam-voiceChannel -4
+         *      |_redteam-voiceChannel -5
          */
-        let roomResult = [false, false, false];
+
+        // 03/31/2021 edit: can't create catgories under category
+
+        let roomResult = [false, false, false, false, false];
         await message.guild.fetch()
             .then(guild => {
-                guild.channels.cache.forEach(channel => {
-                    if (channel.id === gameData.gameRooms[0])
-                        roomResult[0] = true;
-                    if (channel.id === gameData.gameRooms[1])
-                        roomResult[1] = true;
-                    if (channel.id === gameData.gameRooms[2])
-                        roomResult[2] = true;
-                })
+                //sort collection to array
+                const channelsArr = guild.channels.cache.array();
+                for (let i=0; i<channelsArr.length; i++) {
+                    if (gameData.gameRooms.includes(channelsArr[i].id))
+                        roomResult[gameData.gameRooms.indexOf(channelsArr[i].id)] = true;
+                }
             })
             .catch(console.error);
+ 
+        let rootCategory = gameData.gameRooms[rooms.root]  || null; // get the new category object. Default: DB room[0]
+        if (!roomResult[rooms.root]) {
 
-        let newCategory; //get the new category object
-        if (!roomResult[0]) {
-            // Create a new parent category and set to private
-            await message.guild.channels.create('Decrypto Game Rooms', {
+            const channel_id = await channelCreate('Decrypto Game Rooms', {
                 type: 'category',
-                position: 1,
-                permissionOverwrites: [
-                    {
-                    id: message.guild.roles.everyone.id,
-                    deny: ['VIEW_CHANNEL'],
-                }
-                ]
-            }).then(channel => {
-                newCategory = channel;
-                gameData.gameRooms[0] = channel.id;
-            }).catch(error => logger.error(chalk.red(error)));
+                allow: gameData.gameRoles
+            }, {message: message, logger: logger});
+
+            rootCategory = channel_id;
+            gameData.gameRooms[rooms.root] = channel_id;
         }
-        
-        if (!roomResult[1]) {
-            //create blue team channel and set to private 
-            await message.guild.channels.create('Blue Team', {
-                type: 'text',
-                position: 1,
-                permissionOverwrites: [
-                    {
-                        id: message.guild.roles.everyone.id,
-                        deny: ['VIEW_CHANNEL'],
-                    },
-                    {
-                        id: gameData.gameRoles[0],
-                        allow: ['VIEW_CHANNEL'],
-                    }
-                ],
-                parent: newCategory.id,
-            }).then(channel => {
-                gameData.gameRooms[1] = channel.id;
-            }).catch(error => logger.error(chalk.red(error)));
+
+        if (!roomResult[rooms.commonVoiceChannel]) {
+
+            const channel_id = await channelCreate('Common Voice Channel', {
+                type: 'voice',
+                allow: gameData.gameRoles,
+                parent: rootCategory
+            }, {message, logger});
+
+            gameData.gameRooms[rooms.commonVoiceChannel] = channel_id;
         }
-        
-        if (!roomResult[2]) {
-            //create red team and set to private
-            await message.guild.channels.create('Red Team', {
+         
+        if (!roomResult[rooms.blueTeamTextChannel]) {
+
+            const channel_id = await channelCreate('Blue Team - Text Channel', {
                 type: 'text',
-                position: 1,
-                permissionOverwrites: [
-                    {
-                        id: message.guild.roles.everyone.id,
-                        deny: ['VIEW_CHANNEL'],
-                    },
-                    {
-                        id: gameData.gameRoles[1],
-                        allow: ['VIEW_CHANNEL'],
-                    }
-                ],
-                parent: newCategory.id,
-            }).then(channel => {
-                gameData.gameRooms[2] = channel.id;
-            }).catch(error => logger.error(chalk.red(error)));
+                allow: gameData.gameRoles[0],
+                parent: rootCategory
+            }, {message, logger});
+
+            gameData.gameRooms[rooms.blueTeamTextChannel] = channel_id;
+        }
+
+        if (!roomResult[rooms.blueTeamvoiceChannel]) {
+
+            const channel_id = await channelCreate('Blue Team - Voice Channel', {
+                type: 'voice',
+                allow: gameData.gameRoles[0],
+                parent: rootCategory
+            }, {message, logger});
+
+            gameData.gameRooms[rooms.blueTeamVoiceChannel] = channel_id;
+        }
+
+        if (!roomResult[rooms.redTeamTextChannel]) {
+
+            const channel_id = await channelCreate('Red Team - Text Channel', {
+                type: 'text',
+                allow: gameData.gameRoles[1],
+                parent: rootCategory
+            }, {message, logger});
+
+            gameData.gameRooms[rooms.redTeamTextChannel] = channel_id;
+        }
+
+        if (!roomResult[rooms.redTeamVoiceChannel]) {
+
+            const channel_id = await channelCreate('Red Team - Voice Channel', {
+                type: 'voice',
+                allow: gameData.gameRoles[1],
+                parent: rootCategory
+            }, {message, logger});
+
+            gameData.gameRooms[rooms.redTeamVoiceChannel] = channel_id;
         }
         
         // update new rooms to DB
@@ -218,20 +225,25 @@ module.exports = {
             },{new: true}).then(logger.info(chalk.greenBright(`Update gameRooms ${chalk.cyan(gameData.gameRooms)} to database`)))
             .catch(error => logger.error(chalk.red(error)));
 
-        await message.guild.channels.cache.get(gameData.gameRooms[1])
-            .updateOverwrite(
-                message.guild.roles.cache.get(gameData.gameRoles[0]),
-                {
-                    VIEW_CHANNEL: true
-                }
+        Object.keys(rooms).forEach( async key => {
+            if (!key.startsWith('blueTeam') && !key.startsWith('redTeam')) return;
+
+            let allow = {};
+            if (key.startsWith('blueTeam'))
+                allow = message.guild.roles.cache.get(gameData.gameRoles[0]);
+
+            else if (key.startsWith('redTeam'))
+                allow = message.guild.roles.cache.get(gameData.gameRoles[1]);
+            
+            
+            await message.guild.channels.cache.get(gameData.gameRooms[rooms[key]])
+                .updateOverwrite(
+                    allow,
+                    {
+                        VIEW_CHANNEL: true
+                    }
             )
-        await message.guild.channels.cache.get(gameData.gameRooms[2])
-            .updateOverwrite(
-                message.guild.roles.cache.get(gameData.gameRoles[1]),
-                {
-                    VIEW_CHANNEL: true
-                }
-            )
+        });
 
         gameData = await gameModel.findOneAndUpdate(
             { serverId: message.guild.id },

@@ -13,14 +13,23 @@ module.exports = {
         await gameDB(bot, logger, message)
             .then(result => (gameData = result))
             .catch(err => console.log(err));
-        gameData.gameRooms.forEach(room => {
+
+        // add delay to slow down the delete process
+        // if ew remove the delay from here probably  will cause
+        // server leave channel trash and have to restart discord
+        // to fix it
+        for (room of gameData.gameRooms.reverse()) {
             if (bot.client.channels.cache.get(room) != undefined)
-                bot.client.channels.cache.get(room).delete();
-        });
+            bot.client.channels.cache.get(room).delete();
+            await delay(500);
+        }
+
         // console.log(bot.client.guilds.cache.get(DB.server.serverID).roles.cache)
         gameData.gameRoles.forEach(role => {
             if (bot.client.guilds.cache.get(DB.server.serverID).roles.cache.get(role) != undefined)
-            bot.client.guilds.cache.get(DB.server.serverID).roles.cache.get(role).delete();
+                bot.client.guilds.cache.get(DB.server.serverID).roles.cache.get(role).delete();
         });         
-    },
+    }
 };
+
+delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));

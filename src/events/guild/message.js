@@ -4,7 +4,7 @@ const decryptoDB = require('../../functions/serverDB');
 const DM = require('../../functions/DM');
 const gameDB = require('../../functions/gameDB');
 const gameModel = require('../../models/gameSchema');
-
+const {channelCreate, rooms} = require('../../functions/gameRooms');
 module.exports = async (bot, Discord, logger, message) => {
 
     /**
