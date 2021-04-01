@@ -14,6 +14,8 @@ module.exports = {
             .then(result => (gameData = result))
             .catch(err => console.log(err));
 
+        if (gameData.onGame) return message.reply(`Please do not use this command while game is still playing`);
+
         // add delay to slow down the delete process
         // if ew remove the delay from here probably  will cause
         // server leave channel trash and have to restart discord

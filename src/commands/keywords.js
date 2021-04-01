@@ -104,7 +104,10 @@ module.exports = {
             if (isNaN(args[1]) || !args[2]) 
                 return message.reply(`Please follow this syntax \`$kw u (index) (keyword)\``);
 
-            arr[args[1]] = args[2];
+            if (args[1] > gameData.keywords.length - 1)
+                return message.reply(`Please check your index number!`);
+            
+            arr[args[1]-1] = args[2];
 
             gameData = await gameModel.findOneAndUpdate(
                 {
