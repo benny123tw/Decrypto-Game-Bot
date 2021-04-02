@@ -4,6 +4,7 @@ const gameModel = require('../models/gameSchema');
 const chalk = require('chalk');
 const codeChecker = require('../functions/codeChecker');
 const roundChecker = require('../functions/roundChecker');
+const {rooms, teamObj} = require('../functions/gameRooms');
 
 module.exports = {
     name: 'answer',
@@ -36,8 +37,8 @@ module.exports = {
          */
         if (gameData.curEncrypterTeam === 'BLUE' && message.author.id === gameData.blueTeam.encrypterId) {
             
-            message.client.channels.cache.get(gameData.gameRooms[1]).send(`<@${gameData.blueTeam.encrypterId}> cheating!!\nCodes have been reset!`);
-            message.client.channels.cache.get(gameData.gameRooms[2]).send(`<@${gameData.blueTeam.encrypterId}> cheating!!\nCodes have been reset!`);
+            message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(`<@${gameData.blueTeam.encrypterId}> cheating!!\nCodes have been reset!`);
+            message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(`<@${gameData.blueTeam.encrypterId}> cheating!!\nCodes have been reset!`);
             await gameModel.findOneAndUpdate(
                 {
                     serverId: message.guild.id,
@@ -58,8 +59,8 @@ module.exports = {
 
         if (gameData.curEncrypterTeam === 'RED' && message.author.id === gameData.redTeam.encrypterId) {
             
-            message.client.channels.cache.get(gameData.gameRooms[1]).send(`<@${gameData.redTeam.encrypterId}> cheating!!\nCodes have been reset!`);
-            message.client.channels.cache.get(gameData.gameRooms[2]).send(`<@${gameData.redTeam.encrypterId}> cheating!!\nCodes have been reset!`);
+            message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(`<@${gameData.redTeam.encrypterId}> cheating!!\nCodes have been reset!`);
+            message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(`<@${gameData.redTeam.encrypterId}> cheating!!\nCodes have been reset!`);
             await gameModel.findOneAndUpdate(
                 {
                     serverId: message.guild.id,
@@ -161,9 +162,14 @@ module.exports = {
             .setFooter(
                 `${bot.config.footer}`,
             );
-        message.client.channels.cache.get(gameData.gameRooms[1]).send(scoreEmbed);
-        message.client.channels.cache.get(gameData.gameRooms[2]).send(scoreEmbed);
+        message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(scoreEmbed);
+        message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(scoreEmbed);
 
+        // reset encrypter voice mute
+        const encrypter = await message.guild.members.fetch(gameData[teamObj[gameData.curEncrypterTeam]].encrypterId);
+
+        if (encrypter.voice)
+            encrypter.voice.setMute(false);
         /**
          * change current encrypter team
          */
@@ -257,13 +263,14 @@ module.exports = {
         /**
          * Sending `reset codes` message to both channels and show the current tokens each team
          */
-        message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
-        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);    
+        message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
+        message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);    
         
 
         // reset answerers
         await gameModel.findOneAndUpdate({ serverId: message.guild.id }, 
             { $set: {answerers: []}});
+        
     },
 };
 
@@ -308,7 +315,7 @@ const autoAssign = async (message, bot, Discord) => {
                     );
     
     
-                    message.client.channels.cache.get(result.gameRooms[1]).send(bt_encrypter);
-                    message.client.channels.cache.get(result.gameRooms[2]).send(rt_encrypter);
+                    message.client.channels.cache.get(result.gameRooms[rooms.blueTeamTextChannel]).send(bt_encrypter);
+                    message.client.channels.cache.get(result.gameRooms[rooms.redTeamTextChannel]).send(rt_encrypter);
                 });
 }
