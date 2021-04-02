@@ -1,4 +1,4 @@
-# 流程
+# 说明
 
 ### 游戏规则
 
@@ -60,11 +60,11 @@ table th:nth-of-type(2) {
 |指令|描述|
 |-----------|-----	|
 |`$start <mode> <participants>`	|开始游戏。游戏分队提供两种模式，完全随机和自选分队，随机组队必须输入游戏人数。预设为自选分队。mode: random, normal<br>例如：`start random 4`随机分组参与人数4人， `start`自动分组。	|
-|`$draw <keywords> or <codes>` 	|抽关键词和揭示者密码。draw可以缩写为d，keywords可以缩写为key。<br>例：`$draw key` = 抽关键词，`$d code` = 抽密码。   	|
+|`$draw <keywords> or <codes>` 	|抽关键词和揭示者密码。draw可以缩写为d，keywords可以缩写为key。<br>例如：`$draw key` = 抽关键词，`$d code` = 抽密码。   	|
 |`$describe [descriptions]`|此指令**必须**直接向机器人发送信息，揭示者即可将描述传给双方的文字频道。descriptions指抽到的密码顺序进行描述，分隔请用**半角逗号或是空格**。<br>例如：关键词：1. 苹果 2. iPhone 3. 水壶 4. 舞会，抽到密码为2,1,3，则依照顺序描述出对应关键词的号码，`$des 手机, 水果, 水`。|
-|`$answer [codes]`|发送猜测的密码，每一队只能发送一次，一经发送系统会自动回传正确或错误提示<br>例如：`$answer 1 2 3`。|
-|`$history <team>`|列出所有已发送过的描述，可以指定队伍或是列出所有描述。<br>例如：`history`列出所有描述 `$history blue`列出蓝队描述。|
+|`$answer [codes]`|发送猜测的密码，每一队只能发送一次，一经发送系统会自动回传正确或错误提示<br>例如：`$ans 1 2 3`。|
+|`$history <team>`|列出所有已发送过的描述，可以指定队伍或是列出所有描述。<br>例如：`$history`列出所有描述 `$history blue`列出蓝队描述。|
 |`$keywords [<add> <delete> <update>]`|列出所有的关键词，新增关键词，删除关键词，替换指定关键词<br>例如：`$keyword add Game`新增Game到词库里，`$keyword del Game`从词库删除Game，`$keyword update 2 Game`词库中序号2的单词替换为Game。|
 |`$stop`|停止游戏进程、删除身份组，并初始游戏状态（不影响生涯纪录）|
 |`$delete`|删除所有游戏频道和身份组。无法再游戏进行中使用此指令。|
-|`$report @user <reason>`|举报玩家，并由机器人向所有人发起投票，若票数超过总人数的3/4，此投票视为有效，将为该玩家记作弊1，且重置密码。|
+|`$report @user <reason>`|举报玩家，并由机器人向所有人发起投票，若票数超过总人数的3/4，此投票视为有效，将为该玩家记作弊1，且重置密码。<br>例如：`$report @Ann describe`举报Ann描述时作弊，并发起投票。|

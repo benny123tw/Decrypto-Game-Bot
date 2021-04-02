@@ -55,11 +55,11 @@ module.exports = {
 
         if (gameData.curEncrypterTeam === 'BLUE')
             await gameModel.findOneAndUpdate({serverId: user.curServerId},
-                {$set: {"blueTeam.descriptions": descriptions}});
+                {$set: {"blueTeam.descriptions": descriptions, "blueTeam.isDescribe": true}});
         
         if (gameData.curEncrypterTeam === 'RED')
             await gameModel.findOneAndUpdate({serverId: user.curServerId},
-                {$set: {"redTeam.descriptions": descriptions}});
+                {$set: {"redTeam.descriptions": descriptions, "redTeam.isDescribe": true}});
 
         const guild = await message.client.guilds.fetch(gameData.serverId, true);
         const rooms = gameData.gameRooms.splice(1,2);

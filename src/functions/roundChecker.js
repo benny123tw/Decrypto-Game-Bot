@@ -85,6 +85,10 @@ const reset = async (message, bot) => {
                 "redTeam.encrypterId": '',
                 "blueTeam.curCodes": [],
                 "redTeam.curCodes": [],
+                "blueTeam.descriptions": {_1: [], _2: [], _3: [], _4: []},
+                "redTeam.descriptions": {_1: [], _2: [], _3: [], _4: []},
+                "blueTeam.isDescribe": false,
+                "redTeam.isDescribe": false,
                 answerers: [],
             }
         }

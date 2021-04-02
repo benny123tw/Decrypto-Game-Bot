@@ -226,23 +226,31 @@ module.exports = {
             .catch(error => logger.error(chalk.red(error)));
 
         Object.keys(rooms).forEach( async key => {
-            if (!key.startsWith('blueTeam') && !key.startsWith('redTeam')) return;
+            if (!key.startsWith('blueTeam') && !key.startsWith('redTeam')
+            && !key.startsWith('common')) return;
 
-            let allow = {};
+            let allow = [];
             if (key.startsWith('blueTeam'))
-                allow = message.guild.roles.cache.get(gameData.gameRoles[0]);
+                allow.push(message.guild.roles.cache.get(gameData.gameRoles[0]));
 
             else if (key.startsWith('redTeam'))
-                allow = message.guild.roles.cache.get(gameData.gameRoles[1]);
+                allow.push(message.guild.roles.cache.get(gameData.gameRoles[1]));
             
-            
-            await message.guild.channels.cache.get(gameData.gameRooms[rooms[key]])
+            else if (key.startsWith('common')) {
+                allow.push(message.guild.roles.cache.get(gameData.gameRoles[0]));
+                allow.push(message.guild.roles.cache.get(gameData.gameRoles[1]));
+            }                
+
+            allow.forEach( async role => {
+                await message.guild.channels.cache.get(gameData.gameRooms[rooms[key]])
                 .updateOverwrite(
-                    allow,
+                    role,
                     {
                         VIEW_CHANNEL: true
                     }
-            )
+                )
+            })
+            
         });
 
         gameData = await gameModel.findOneAndUpdate(

@@ -10,6 +10,11 @@ const rooms = {
     redTeamVoiceChannel: 5
 }
 
+const teamObj = {
+    BLUE: "blueTeam",
+    RED: "redTeam"
+}
+
 const channelCreate = async (name, options = {},{message, logger}) => {
 
     let {
@@ -66,5 +71,6 @@ const channelCreate = async (name, options = {},{message, logger}) => {
 
 module.exports = {
     rooms,
-    channelCreate
+    channelCreate,
+    teamObj,
 }

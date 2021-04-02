@@ -170,13 +170,13 @@ module.exports = {
         if (gameData.curEncrypterTeam === 'BLUE' && gameData.answerers.includes('RED') 
             && gameData.answerers.includes('BLUE')) {
                 console.log(`BLUE to RED`)
-                await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "RED"}});
+                await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "RED", "blueTeam.isDescribe": false}});
             }            
 
         if (gameData.curEncrypterTeam === 'RED' && gameData.answerers.includes('RED') 
             && gameData.answerers.includes('BLUE')) {
                 console.log(`RED to BLUE`)
-            await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "BLUE"}});  
+            await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "BLUE", "redTeam.isDescribe": false}});  
 
             /**
              *  there are 8 conditions to deal with

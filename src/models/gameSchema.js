@@ -22,6 +22,7 @@ const gameSchema = new mongoose.Schema({
         curCodes: { type: Array, default: [] },
         encrypterId: { type: String, default: ''},
         encryptersList: { type: Array, default: []},
+        isDescribe: { type: Boolean, default: false},
         descriptions: { type: JSON, default: {
             _1: { type: Array, default: []},
             _2: { type: Array, default: []},
@@ -36,6 +37,7 @@ const gameSchema = new mongoose.Schema({
         curCodes: { type: Array, default: [] },
         encrypterId: { type: String, default: ''},
         encryptersList: { type: Array, default: []},
+        isDescribe: { type: Boolean, default: false},
         descriptions: { type: JSON, default: {
             _1: { type: Array, default: []},
             _2: { type: Array, default: []},

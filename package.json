@@ -1,6 +1,6 @@
 {
   "name": "decrypto",
-  "version": "0.9.7",
+  "version": "0.9.7b",
   "description": "Decrypto board game on Discord",
   "author": "Benny Yen",
   "license": "MIT",
@@ -21,6 +21,7 @@
     "discord": "^0.8.2",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
+    "ffmpeg-static": "^4.2.8",
     "fs": "0.0.1-security",
     "jsonfile": "^6.1.0",
     "lodash": "^4.17.19",

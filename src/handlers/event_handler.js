@@ -1,5 +1,4 @@
 const fs = require('fs');
-const blackList = ['messageReactionAdd']; //for testing
 
 module.exports = (bot, Discord, logger) => {
     const load_dir = dirs => {
@@ -8,7 +7,6 @@ module.exports = (bot, Discord, logger) => {
             .filter(file => file.endsWith('.js'));
 
         for (const file of event_files) {
-            if(blackList.includes(file.split('.')[0])) return;
             const event = require(`../events/${dirs}/${file}`);
             const event_name = file.split('.')[0];
             bot.client.on(event_name, event.bind(null, bot, Discord, logger));

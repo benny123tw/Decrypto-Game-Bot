@@ -1,15 +1,33 @@
 const gameModel = require('../models/gameSchema');
+const {teamObj} = require('../functions/gameRooms');
 
 module.exports = {
     name: 'history',
-    aliases: ['hs'],
+    aliases: ['hs', 'current'],
     permissions: [],
-    description: 'list descriptions history [red/blue]',
+    description: 'list descriptions history [red/blue] or list current descriptions',
     async execute({ message, args, cmd, bot, logger, Discord }, DB) {
 
         if ((args[0] !== 'red' && args[0] !== 'blue') && args.length !== 0) return message.reply(`cannot recognize \'${args[0]}\' as a team`);
 
         let gameData = await gameModel.findOne({serverId: message.guild.id});
+
+        if (cmd === 'current' && !gameData[teamObj[gameData.curEncrypterTeam]].isDescribe) return message.reply(`Current encrypter haven't send descriptions yet.`);
+
+        /**
+         *  list current descriptions if current encrypter has sent it
+         */
+        if (cmd === 'current') {
+            const obj = gameData[teamObj[gameData.curEncrypterTeam]].descriptions;
+            const curCodes = gameData[teamObj[gameData.curEncrypterTeam]].curCodes;
+            const resultArr = [];
+            for( let code of curCodes) {
+                // notice: this will pop gameData descriptions object
+                resultArr.push(obj[`_${code}`].pop());
+            }
+            const msg = `1. ${resultArr[0]}\n2. ${resultArr[1]}\n3. ${resultArr[2]}`;
+            return message.channel.send(msg);
+        }
 
         const descriptions = {
             blueTeam: {
