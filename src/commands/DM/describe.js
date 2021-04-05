@@ -1,4 +1,5 @@
 const gameModel = require('../../models/gameSchema');
+const {teamObj} = require('../../functions/gameRooms');
 
 module.exports = {
     name: 'describe',
@@ -30,13 +31,8 @@ module.exports = {
 
         if (args.length === 0 || args.length !== 3) return message.reply('Please enter 3 descriptions!');
 
-        const teamObj = {
-            BLUE: 'blueTeam',
-            RED: 'redTeam'
-        }
-
-        const descriptions = gameData[teamObj[gameData.curEncrypterTeam]].descriptions;
-        const codes = gameData[teamObj[gameData.curEncrypterTeam]].curCodes;
+        const descriptions = gameData[teamObj[gameData.curEncrypterTeam].name].descriptions;
+        const codes = gameData[teamObj[gameData.curEncrypterTeam].name].curCodes;
 
         // test if descriptions is repeat
         let index = 0;

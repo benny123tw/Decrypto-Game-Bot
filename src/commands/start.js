@@ -5,6 +5,10 @@ const distribute = require('../functions/distribute');
 const playerModel = require('../models/playerSchema');
 const {channelCreate, rooms} = require('../functions/gameRooms');
 
+/**
+ *  Syntax: $start <rounds> <mode> <participates> <options> 
+ *          $start 3 random 8 -auto
+ */
 module.exports = {
     name: 'start',
     aliases: [],
@@ -17,22 +21,25 @@ module.exports = {
          */
         let options = {
             gameMode: 'normal',
-            autoAssign: false,
+            autoAssign: true,
+            rounds: 3,
             // blueTeamFirstEncrypter: null, 
             // redTeamFirstEncrypter: null, 
         };
+
+        // setting rounds. when over 10 set rounds to 3
+        if (!isNaN(args[0])) {
+            if (args[0] > 10) message.reply('Cannot set over 10 rounds. Rounds set to 3 now.');
+            options.rounds = args[0] > 10 ? 3 : args[0];
+            args.shift();
+        }
 
         // check if player set gamemode to random(default: normal)
         if (args[0] === 'random') options.gameMode = 'random';
 
         for (const arg of args) {
             if (!arg.startsWith('-')) continue;
-            
-                if (arg.endsWith('auto') || arg.endsWith('a')) options.autoAssign = true;
-                // if (options.autoAssign && message.mentions.users)                 
-                //     options.blueTeamFirstEncrypter = message.mentions.users.first();
-                // if (options.autoAssign && message.mentions.users)                 
-                //     options.redTeamFirstEncrypter = message.mentions.users.last();
+            if (arg.endsWith('auto') || arg.endsWith('a')) options.autoAssign = false;
         }
 
 
@@ -74,40 +81,49 @@ module.exports = {
             })
             .catch(console.error);
 
+        const _highest = message.guild.roles.highest.rawPosition;
+
         // create a blue team role
         if (roleResult[0] === false) {
             // Create a new role with data and a reason
-            let blueTeam;
+        
             await message.guild.roles.create({
                 data: {
                     name: `[${bot.config.name}]Blue Team`,
                     color: 'BLUE',
                     permissions: ['VIEW_CHANNEL'],
+                    hoist: true,             
+                    position: -1,
             },
-                reason: 'TEAMS FOR DECRYPTO BOT TO PLAY GAME',
+                reason: 'TEAMS FOR DECRYPTO BOT TO PLAY GAME',   
             })
-                .then(newrole => blueTeam = newrole)
+                .then(newrole => {
+                    gameData.gameRoles[0] = newrole.id;
+                    console.log(`Your role ${newrole.name}'s id is ${newrole.id}`);
+                })
                 .catch(console.error);
-            gameData.gameRoles[0] = blueTeam.id;
-            console.log(`Your role ${blueTeam.name}'s id is ${blueTeam.id}`)
+            
         }  
         
         //create a red team role
         if (roleResult[1] === false) {
             // Create a new role with data and a reason
-            let redTeam;
             await message.guild.roles.create({
                 data: {
                     name: `[${bot.config.name}]Red Team`,
                     color: 'RED',
                     permissions: ['VIEW_CHANNEL'],
+                    hoist: true,
+                    position: -1,
+
             },
                 reason: 'TEAMS FOR DECRYPTO BOT TO PLAY GAME',
             })
-                .then(newrole => redTeam = newrole)
+                .then(newrole => {
+                    gameData.gameRoles[1] = newrole.id;
+                    console.log(`Your role ${newrole.name}'s id is ${newrole.id}`)
+                })
                 .catch(console.error);
-            gameData.gameRoles[1] = redTeam.id;
-            console.log(`Your role ${redTeam.name}'s id is ${redTeam.id}`)
         }
 
         // update new role to DB

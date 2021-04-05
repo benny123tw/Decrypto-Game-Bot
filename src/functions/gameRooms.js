@@ -11,8 +11,14 @@ const rooms = {
 }
 
 const teamObj = {
-    BLUE: "blueTeam",
-    RED: "redTeam"
+    BLUE: {
+        name: "blueTeam",
+        color: '#2fcff8',
+    },
+    RED: { 
+        name: "redTeam",
+        color: '#fd5252',
+    }
 }
 
 const channelCreate = async (name, options = {},{message, logger}) => {

@@ -8,7 +8,7 @@ const execute = async ({bot, Discord, logger, message}, {user}) => {
     /**
      * Ignore all messages without our prefix.
      */
-    if (!message.content.startsWith('~')) {
+    if (!message.content.startsWith('$')) {
         if (!user.onCustomer)
             return custormerService({bot, Discord, logger, message}, {user: user});
         return;

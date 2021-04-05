@@ -2,6 +2,10 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const discord = require('discord.js');
+const intents = new discord.Intents([
+    discord.Intents.NON_PRIVILEGED, // include all non-privileged intents, would be better to specify which ones you actually need
+    "GUILD_MEMBERS", // lets you request guild members (i.e. fixes the issue)
+]);
 const winston = require('winston');
 const chalk = require('chalk');
 const opn = require('opn');
@@ -73,7 +77,7 @@ const configSchema = {
 const createBot = initialConfig => {
     // Define the bot
     const bot = {
-        client: new discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] }),
+        client: new discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'], ws: { intents } }),
         log: logger(initialConfig.tag || `[Bot ${initialConfig.index}]`),
         commands: new discord.Collection(),
         DM_commands: new discord.Collection(),

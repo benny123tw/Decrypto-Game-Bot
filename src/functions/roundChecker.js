@@ -1,5 +1,10 @@
 const chalk = require('chalk');
-
+const playerModel = require('../models/playerSchema');
+const {rooms, teamObj} = require('../functions/gameRooms');
+const fs = require('fs');
+const delay = require('../functions/delay');
+const gameModel = require('../models/gameSchema');
+const Discord = require('discord.js');
 
 /**
  * passing server object and gameData, handle tie sitduation
@@ -24,6 +29,7 @@ const tie = async ({ message, bot, logger, Discord }, DB, gameData) => {
             { curServerId: message.guild.id, team: 'RED' }, 
             { $inc: { total_Games: 1, loses: 1}});
         await reset(message, bot);
+        return 1;
     }
 
     if (redTeamScore > blueTeamScore) {
@@ -37,22 +43,25 @@ const tie = async ({ message, bot, logger, Discord }, DB, gameData) => {
             { curServerId: message.guild.id, team: 'BLUE' }, 
             { $inc: { total_Games: 1, loses: 1}});
         await reset(message, bot);
+        return 2;
     }
 
     if (blueTeamScore === redTeamScore) {
         logger.modules(`${chalk.cyanBright(`Tie!`)}`);
         await reset(message, bot);
+        return 0;
     }
 }
 
-const winLose = ({ message, args, cmd, bot, logger, Discord }, DB, gameData) => {
-    
-}
-
-const gameModel = require('../models/gameSchema');
 const reset = async (message, bot) => {
 
     let gameData = await gameModel.findOne({serverId: message.guild.id});
+
+    let onGame = true;
+
+    if (gameData.curGames >= gameData.options.rounds) onGame = false;
+    
+    if (onGame) roundMessage(message, gameData.curGames);
 
     //unpin all bot's pinned message in both game rooms
     message.client.channels.cache.get(gameData.gameRooms[1]).messages.fetchPinned()
@@ -75,6 +84,7 @@ const reset = async (message, bot) => {
         },
         {
             $set: {
+                "onGame": onGame,
                 "blueTeam.keywords": [],
                 "redTeam.keywords": [],
                 "blueTeam.intToken": 0,
@@ -93,10 +103,64 @@ const reset = async (message, bot) => {
             }
         }
     )
+    
+    playBgm(message.guild, gameData);
+}
+
+const playBgm = async (guild, gameData) => {
+    const audio_files = fs.readdirSync('./audio/End').filter(file => file.endsWith('.mp3'));
+    const rand = Math.floor(Math.random() * audio_files.length);
+
+    const connection = await guild.channels.cache.get(gameData.gameRooms[rooms.commonVoiceChannel]).join();
+
+    await guild.channels.cache.get(gameData.gameRooms[rooms.blueTeamVoiceChannel]).members.forEach(member => {
+        member.voice.setChannel(gameData.gameRooms[rooms.commonVoiceChannel])
+    });
+    await guild.channels.cache.get(gameData.gameRooms[rooms.redTeamVoiceChannel]).members.forEach(member => {
+        member.voice.setChannel(gameData.gameRooms[rooms.commonVoiceChannel])
+    });
+
+    await delay(3000);
+
+    await connection.play(`./audio/End/${audio_files[rand]}`, {volume: 0.5}).on('finish', async () => {
+        const blue = await guild.channels.cache.get(gameData.gameRooms[rooms.commonVoiceChannel]).members.filter(member => gameData.blueTeam.encryptersList.includes(member.id));
+        const red = await guild.channels.cache.get(gameData.gameRooms[rooms.commonVoiceChannel]).members.filter(member => gameData.redTeam.encryptersList.includes(member.id));
+        await blue.forEach(member => member.voice.setChannel(gameData.gameRooms[rooms.blueTeamVoiceChannel]));
+        await red.forEach(member => member.voice.setChannel(gameData.gameRooms[rooms.redTeamVoiceChannel]));
+    });
+}
+
+const roundMessage = (message, round) => {
+
+    const newRoundEmbed = new Discord.MessageEmbed()
+    .setColor('#e42643')
+    .setTitle(`Round ${round}`)
+    .setFooter(
+        `${bot.config.footer}`,
+    );
+
+    message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(newRoundEmbed);
+    message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(newRoundEmbed);
+}
+
+const gameOverMessage = (message, gameData, team, bot) => {
+
+    const gameOverEmbed = new Discord.MessageEmbed()
+    .setColor(`${teamObj[team.toUpperCase()].color}`)
+    .setTitle(`Game Over`)
+    .setDescription(`${team} Team Is Winner!\nType \`scoreboard\` to see your score!`)
+    .setFooter(
+        `${bot.config.footer}`,
+    );
+
+    message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(gameOverEmbed);
+    message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(gameOverEmbed);
 }
 
 module.exports = {
     tie,
-    winLose,
     reset,
+    playBgm,
+    roundMessage,
+    gameOverMessage
 }

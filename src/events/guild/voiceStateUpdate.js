@@ -5,6 +5,8 @@ module.exports = async (bot, Discord, logger, oldState, newState) => {
     const gameData = await gameModel.findOne({serverId: newState.guild.id});
 
     // if (newState.channelID !== gameData.gameRooms[rooms.commonVoiceChannel]) return;
+
+    if (!gameData.onGame) return;
     
     // return mute event
     if (oldState.channel === newState.channel) return;
@@ -39,15 +41,16 @@ const encrypterChecker = async (oldState, newState, gameData) => {
     const state = !newState.channel ? oldState : newState;
 
     // find encrypter
-    const encrypter = await state.guild.members.fetch(gameData[teamObj[gameData.curEncrypterTeam]].encrypterId);
+    if (gameData[teamObj[gameData.curEncrypterTeam].name].encrypterId)
+        this.encrypter = await state.guild.members.fetch(gameData[teamObj[gameData.curEncrypterTeam].name].encrypterId);
     
     // check if encrypter is in voice channel 
-    if (!encrypter.voice.channel) return;
+    if (!this.encrypter || !this.encrypter.voice.channel) return;
 
     // if encrypter try to join another channels disconnect him
-    if (newState.channel && newState.id === gameData[teamObj[gameData.curEncrypterTeam]].encrypterId) {
+    if (newState.channel && newState.id === gameData[teamObj[gameData.curEncrypterTeam].name].encrypterId) {
         if (newState.channel.id !== gameData.gameRooms[rooms.commonVoiceChannel]) 
-            return encrypter.voice.setChannel(gameData.gameRooms[rooms.commonVoiceChannel]);
+            return this.encrypter.voice.setChannel(gameData.gameRooms[rooms.commonVoiceChannel]);
     }
 
     // check if there have 2 team player in comomon voice channel
@@ -67,5 +70,5 @@ const encrypterChecker = async (oldState, newState, gameData) => {
     }
         
     // mute handler
-    encrypter.voice.setMute(checker.blue && checker.red ? false : true);  
+    this.encrypter.voice.setMute(checker.blue && checker.red ? false : true);  
 }

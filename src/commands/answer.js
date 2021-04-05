@@ -5,6 +5,7 @@ const chalk = require('chalk');
 const codeChecker = require('../functions/codeChecker');
 const roundChecker = require('../functions/roundChecker');
 const {rooms, teamObj} = require('../functions/gameRooms');
+const {autoAssign} = require('../functions/distribute');
 
 module.exports = {
     name: 'answer',
@@ -26,8 +27,7 @@ module.exports = {
          * Return if codes haven't draw
          */
         if (!gameData.onGame || gameData.redTeam.keywords.length === 0 
-            || gameData.blueTeam.keywords.length === 0 || gameData.blueTeam.curCodes.length === 0
-            || gameData.redTeam.curCodes.length === 0) 
+            || gameData.blueTeam.keywords.length === 0 || gameData[teamObj[gameData.curEncrypterTeam].name].curCodes.length === 0) 
                 return message.channel.send(`some team haven't draw codes/keywords yet`);        
 
         /**
@@ -152,7 +152,7 @@ module.exports = {
         gameData = await gameModel.findOne({ serverId: message.guild.id });
         const scoreEmbed = new Discord.MessageEmbed()
             .setColor('#e42643')
-            .setTitle(`Current 2 Teams Tokens`)
+            .setTitle(`Current Tokens`)
             .addFields(
                 { name: 'BLUE', value: `✅ INT Token: **${gameData.blueTeam.intToken}**\n\n😥 MIS Token: **${gameData.blueTeam.misToken}**`},
                 { name: '\u200B', value: '\u200B' },
@@ -166,9 +166,9 @@ module.exports = {
         message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(scoreEmbed);
 
         // reset encrypter voice mute
-        const encrypter = await message.guild.members.fetch(gameData[teamObj[gameData.curEncrypterTeam]].encrypterId);
+        const encrypter = await message.guild.members.fetch(gameData[teamObj[gameData.curEncrypterTeam].name].encrypterId);
 
-        if (encrypter.voice)
+        if (encrypter.voice.channel)
             encrypter.voice.setMute(false);
         /**
          * change current encrypter team
@@ -179,6 +179,8 @@ module.exports = {
                 await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$set:{curEncrypterTeam: "RED", "blueTeam.isDescribe": false}});
             }            
 
+        
+        let winningTeam = 0;
         if (gameData.curEncrypterTeam === 'RED' && gameData.answerers.includes('RED') 
             && gameData.answerers.includes('BLUE')) {
                 console.log(`RED to BLUE`)
@@ -199,13 +201,13 @@ module.exports = {
             if ((server.blueTeam.intToken === 2 && server.blueTeam.misToken === 2)
                 || (server.redTeam.intToken === 2 && server.redTeam.misToken === 2)) {
                 //do smthing tie fn
-                roundChecker.tie({ message, bot, logger, Discord }, DB, server);
+                winningTeam = await roundChecker.tie({ message, bot, logger, Discord }, DB, server);
             }
 
             else if ((server.blueTeam.intToken === 2 && server.redTeam.intToken === 2)
                     || server.blueTeam.intToken === 2 && server.redTeam.intToken === 2) {
                 //do smthing tie fn
-                roundChecker.tie({ message, bot, logger, Discord }, DB, server);    
+                winningTeam = await roundChecker.tie({ message, bot, logger, Discord }, DB, server);    
             }
 
             // else if (rounds > 8) { // do tie fn}
@@ -220,6 +222,8 @@ module.exports = {
                     { curServerId: message.guild.id, team: 'BLUE' }, 
                     { $inc: { total_Games: 1, wins: 1}});
                 await roundChecker.reset(message, bot);
+
+                winningTeam = 1;
             }
 
             if (server.blueTeam.misToken === 2) {
@@ -230,6 +234,8 @@ module.exports = {
                     { curServerId: message.guild.id, team: 'BLUE' }, 
                     { $inc: { total_Games: 1, loses: 1}});
                 await roundChecker.reset(message, bot);
+
+                winningTeam = 2;
             }
 
             if (server.redTeam.intToken === 2) {
@@ -240,6 +246,8 @@ module.exports = {
                     { curServerId: message.guild.id, team: 'RED' }, 
                     { $inc: { total_Games: 1, wins: 1}});
                 await roundChecker.reset(message, bot);
+
+                winningTeam = 2;
             }
 
             if (server.redTeam.misToken === 2) {
@@ -250,14 +258,19 @@ module.exports = {
                     { curServerId: message.guild.id, team: 'RED' }, 
                     { $inc: { total_Games: 1, loses: 1}});
                 await roundChecker.reset(message, bot);
+
+                winningTeam = 1;
             }       
 
             gameData = await gameModel.findOneAndUpdate({serverId: message.guild.id},
                 {"blueTeam.curCodes": [], "redTeam.curCodes": []},{new: true});
-            
-            if (gameData.options.autoAssign)
-                autoAssign(message, bot, Discord); // random encrypter (repeat)
         }
+
+        console.log(winningTeam)
+        if (!gameData.onGame) return roundChecker.gameOverMessage(message, gameData, _winningOjb[winningTeam], bot);
+        
+        if (gameData.options.autoAssign)
+                autoAssign(message, bot, Discord); // random encrypter (repeat)
             
         gameData = await gameModel.findOne({serverId: message.guild.id});
         /**
@@ -274,48 +287,8 @@ module.exports = {
     },
 };
 
-const autoAssign = async (message, bot, Discord) => {
-        let encrypterArray = [];
-        // random pick 1 player from each team 
-        //blue
-        let randomUserBlueTeam = await playerModel.find({
-            curServerId: message.guild.id, 
-            team: "BLUE"
-        });
-        let index = Math.floor(Math.random() * randomUserBlueTeam.length);
-        encrypterArray[0] = randomUserBlueTeam[index].playerId;
-
-        // red
-        let randomUserRedTeam = await playerModel.find({
-            curServerId: message.guild.id, 
-            team: "RED"
-        });
-
-        index = Math.floor(Math.random() * randomUserRedTeam.length);
-        encrypterArray[1] = randomUserRedTeam[index].playerId;
-
-        await gameModel.findOneAndUpdate({serverId: message.guild.id},
-            {$set:{"blueTeam.encrypterId": encrypterArray[0], 
-                    "redTeam.encrypterId": encrypterArray[1]}},{new: true})
-                .then(result =>{
-                    const bt_encrypter = new Discord.MessageEmbed().setColor('#e42643')
-                    .setTitle('Blue Team Encrypter')
-                    .setDescription(`${message.guild.members.cache.get(result.blueTeam.encrypterId).nickname} is current encrypter!`)
-                    .setThumbnail(message.guild.members.cache.get(result.blueTeam.encrypterId).user.avatarURL())
-                    .setFooter(
-                        `${bot.config.footer}`
-                    );
-    
-                    const rt_encrypter = new Discord.MessageEmbed().setColor('#e42643')
-                    .setTitle('Blue Team Encrypter')
-                    .setDescription(`${message.guild.members.cache.get(result.redTeam.encrypterId).nickname} is current encrypter!`)
-                    .setThumbnail(message.guild.members.cache.get(result.redTeam.encrypterId).user.avatarURL())
-                    .setFooter(
-                        `${bot.config.footer}`
-                    );
-    
-    
-                    message.client.channels.cache.get(result.gameRooms[rooms.blueTeamTextChannel]).send(bt_encrypter);
-                    message.client.channels.cache.get(result.gameRooms[rooms.redTeamTextChannel]).send(rt_encrypter);
-                });
+const _winningOjb = {
+    0: 'Tie',
+    1: 'Blue',
+    2: 'Red',
 }

@@ -12,14 +12,14 @@ module.exports = {
 
         let gameData = await gameModel.findOne({serverId: message.guild.id});
 
-        if (cmd === 'current' && !gameData[teamObj[gameData.curEncrypterTeam]].isDescribe) return message.reply(`Current encrypter haven't send descriptions yet.`);
+        if (cmd === 'current' && !gameData[teamObj[gameData.curEncrypterTeam].name].isDescribe) return message.reply(`Current encrypter haven't send descriptions yet.`);
 
         /**
          *  list current descriptions if current encrypter has sent it
          */
         if (cmd === 'current') {
-            const obj = gameData[teamObj[gameData.curEncrypterTeam]].descriptions;
-            const curCodes = gameData[teamObj[gameData.curEncrypterTeam]].curCodes;
+            const obj = gameData[teamObj[gameData.curEncrypterTeam].name].descriptions;
+            const curCodes = gameData[teamObj[gameData.curEncrypterTeam].name].curCodes;
             const resultArr = [];
             for( let code of curCodes) {
                 // notice: this will pop gameData descriptions object

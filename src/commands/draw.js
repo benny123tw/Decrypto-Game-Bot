@@ -16,10 +16,6 @@ module.exports = {
         if (!gameData.onGame || !DB.player.onGame) return message.reply(`You're not in game`);
         if (!gameData.gameRooms.includes(message.channel.id)) return message.reply(`Please type in Game Room!(Under Decrypto category)`);
 
-        // if autoAssign is true check player id is eqaul to specified player id
-        if (gameData.options.autoAssign && gameData.blueTeam.encrypterId !== message.author.id
-            && gameData.redTeam.encrypterId !== message.author.id) return message.reply('You are not current encrypter!');
-
         if(!args[0]) 
             return message.reply(`Enter \`${bot.config.prefix}draw (key/code)\` to execute the command.`);
 
@@ -76,8 +72,16 @@ module.exports = {
                 );
             return await message.channel.send(keyEmbed).then(msg => msg.pin());
         }
+
+        // if autoAssign is true check player id is eqaul to specified player id
+        if (gameData.options.autoAssign && gameData.blueTeam.encrypterId !== message.author.id
+            && gameData.redTeam.encrypterId !== message.author.id) return message.reply('You are not current encrypter!');
+
             
         if(cmd.startsWith('code') || args[0].startsWith('code')) {
+
+            if (DB.player.team !== gameData.curEncrypterTeam) return message.reply('Your team is not in encrypter round');
+
             if (DB.player.team === 'BLUE' && gameData.blueTeam.curCodes.length) return message.channel.send(`<@${gameData.blueTeam.encrypterId}> has drew the codes already`);
             else if (DB.player.team === 'RED' && gameData.redTeam.curCodes.length) return message.channel.send(`<@${gameData.redTeam.encrypterId}> has drew the codes already`);
             

@@ -1,5 +1,6 @@
 const playerModel = require('../models/playerSchema');
 const gameModel = require('../models/gameSchema');
+const {rooms, teamObj} =require('../functions/gameRooms');
 
 /**
  * shuffle the array using random pointer
@@ -22,50 +23,56 @@ const shuffle = function shuffleArray(array) {
 }
 
 const autoAssign = async (message, bot, Discord) => {
+    
     let gameData = await gameModel.findOne({serverId: message.guild.id});
 
-    gameData = await gameModel.findOneAndUpdate({serverId: message.guild.id},
-        {$set:{"blueTeam.encrypterId": gameData.blueTeam.encryptersList[0], 
-                "redTeam.encrypterId": gameData.redTeam.encryptersList[0]}}, {new: true})
-        .then(async result =>{
-            const bt_encrypter = new Discord.MessageEmbed().setColor('#e42643')
-            .setTitle('Blue Team Encrypter')
-            .setDescription(`${message.guild.members.cache.get(result.blueTeam.encrypterId).user.username} is current encrypter!`)
-            .setThumbnail(message.guild.members.cache.get(result.blueTeam.encrypterId).user.avatarURL())
-            .setFooter(
-                `${bot.config.footer}`
-            );
-
-            const rt_encrypter = new Discord.MessageEmbed().setColor('#e42643')
-            .setTitle('Red Team Encrypter')
-            .setDescription(`${message.guild.members.cache.get(result.redTeam.encrypterId).user.username} is current encrypter!`)
-            .setThumbnail(message.guild.members.cache.get(result.redTeam.encrypterId).user.avatarURL())
-            .setFooter(
-                `${bot.config.footer}`
-            );
-
-
-            message.client.channels.cache.get(result.gameRooms[1]).send(bt_encrypter);
-            message.client.channels.cache.get(result.gameRooms[2]).send(rt_encrypter);
-
-            const btFirstId = gameData.blueTeam.encryptersList.splice(0,1);
-            gameData.blueTeam.encryptersList.push(btFirstId);
-
-            const rtFirstId = gameData.redTeam.encryptersList.splice(0,1);
-            gameData.redTeam.encryptersList.push(rtFirstId);
-
-            await gameModel.findOneAndUpdate(
-                {
-                    serverId: message.guild.id,
-                },
-                {
-                    $set: {
-                        "blueTeam.encryptersList": gameData.blueTeam.encryptersList,
-                        "redTeam.encryptersList": gameData.redTeam.encryptersList,
-                    }
-                }
-            )
-        });
+    switch (gameData.curEncrypterTeam) {
+        case 'BLUE':
+            gameData = await gameModel.findOneAndUpdate({serverId: message.guild.id},
+                {$set:{"blueTeam.encrypterId": gameData.blueTeam.encryptersList[0]}}, {new: true})
+                .then(async result =>{
+                    const bt_encrypter = new Discord.MessageEmbed()
+                    .setColor(teamObj.BLUE.color)
+                    .setTitle('Blue Team Encrypter')
+                    .setDescription(`${message.guild.members.cache.get(result.blueTeam.encrypterId).user.username} is current encrypter!`)
+                    .setThumbnail(message.guild.members.cache.get(result.blueTeam.encrypterId).user.avatarURL())
+                    .setFooter(
+                        `${bot.config.footer}`
+                    );        
+                    
+                    message.client.channels.cache.get(result.gameRooms[rooms.blueTeamTextChannel]).send(bt_encrypter);
+                    message.client.channels.cache.get(result.gameRooms[rooms.redTeamTextChannel]).send(bt_encrypter);
+        
+                    const btFirstId = gameData.blueTeam.encryptersList.shift();
+                    gameData.blueTeam.encryptersList.push(btFirstId);
+        
+                    await gameModel.findOneAndUpdate({ serverId: message.guild.id, }, 
+                        { $set: { "blueTeam.encryptersList": gameData.blueTeam.encryptersList, }});
+                });
+            break;
+        case 'RED':
+            gameData = await gameModel.findOneAndUpdate({serverId: message.guild.id},
+                {$set:{"redTeam.encrypterId": gameData.redTeam.encryptersList[0]}}, {new: true})
+                .then(async result =>{
+                    const rt_encrypter = new Discord.MessageEmbed()
+                    .setColor(teamObj.RED.color)
+                    .setTitle('Red Team Encrypter')
+                    .setDescription(`${message.guild.members.cache.get(result.redTeam.encrypterId).user.username} is current encrypter!`)
+                    .setThumbnail(message.guild.members.cache.get(result.redTeam.encrypterId).user.avatarURL())
+                    .setFooter(
+                        `${bot.config.footer}`
+                    );        
+                    message.client.channels.cache.get(result.gameRooms[rooms.blueTeamTextChannel]).send(rt_encrypter);
+                    message.client.channels.cache.get(result.gameRooms[rooms.redTeamTextChannel]).send(rt_encrypter);
+        
+                    const rtFirstId = gameData.redTeam.encryptersList.shift();
+                    gameData.redTeam.encryptersList.push(rtFirstId);
+        
+                    await gameModel.findOneAndUpdate({ serverId: message.guild.id, }, 
+                        { $set: { "redTeam.encryptersList": gameData.redTeam.encryptersList, }});
+                });
+            break;
+    }
 }
 
 /**
@@ -188,8 +195,8 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                 });
 
                 // shuffle encrypter for auto-assign order
-                blueTeam = shuffle(blueTeam);
-                redTeam = shuffle(redTeam);
+                arr = shuffle(arr);
+                leftSide = shuffle(leftSide);
 
                 await gameModel.findOneAndUpdate(
                     {
@@ -239,19 +246,42 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                 .addFields(
                     { name: `${blueTeamEmoji} Blue Team`, value: `${blueTeam.join('\n') || `none`}` },
                     { name: `${redTeamEmoji} Red Team`, value: `${redTeam.join('\n') || `none`}` },
-                    { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
                     `${bot.config.footer}`,
                 );
-                message.channel.send(newEmbed);
+                await loading(message, gameData.options, newEmbed, Discord);
 
                 if (gameData.options.autoAssign)
                     autoAssign(message, bot, Discord);
             });
-        })
+        })   
+}
 
-        
+const delay = require('../functions/delay');
+const loading = async (message, options, embedMessage, Discord) => {
+    let st = '';
+    message.channel.send(`Loading`).then( async msg => {
+        for (let i = 0; i <4; i++) {
+            st += '..'
+            if (i % 3 === 0) st = '';
+            msg.edit(`Loading${st}`);
+            await delay(500);
+        }
+        msg.edit(`Loading Completed!`);
+        await delay(500);
+        msg.channel.send(embedMessage);
+
+        const optionsEmbed = new Discord.MessageEmbed()
+                .setColor('#e42643')
+                .setTitle('Options')
+                .addFields(
+                    { name: 'Game Mode', value: options.gameMode, inLine: true},
+                    { name: 'Rounds', value: options.rounds, inLine: true},
+                    { name: 'Auto Assign', value: options.autoAssign, inLine: true},
+                )
+        msg.channel.send(optionsEmbed);
+    });
 }
 
 const deleteMessage = (message) => {
@@ -361,14 +391,22 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData) =>
     });
 
 
+    message.channel.send('1s').then(async msg => {
+        await delay(1250);
+        for (let i = 2; i < 11; i++) {
+            msg.edit(`${i}s`)
+            await delay(1250);
+        }
+        msg.delete();
+    });
 
     setTimeout(async () => {
         console.log(blueTeam, redTeam)
         console.log(blueTeamID, redTeamID)
 
         // shuffle encrypter for auto-assign order
-        blueTeam = shuffle(blueTeam);
-        redTeam = shuffle(redTeam);
+        blueTeamID = shuffle(blueTeamID);
+        redTeamID = shuffle(redTeamID);
 
         const newEmbed = new Discord.MessageEmbed()
         .setColor('#e42643')
@@ -385,12 +423,12 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData) =>
 
         await gameModel.findOneAndUpdate(
             {
-                server: message.guild.id
+                serverId: message.guild.id,
             },
             {
                 $set: {
                     "blueTeam.encryptersList": blueTeamID,
-                    "redTeam.encryptersList": redTeamID,
+                    "redTeam.encryptersList": redTeamID
                 }
             }
         );
@@ -428,10 +466,12 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData) =>
 
         if (gameData.options.autoAssign)
             autoAssign(message, bot, Discord);
-    }, 10000);
+    }, 12500);
 };
 
 module.exports = {
     normal,
     randomDistribute,
+    autoAssign,
+    loading
 }

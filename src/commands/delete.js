@@ -1,4 +1,5 @@
 const gameDB = require('../functions/gameDB');
+const delay = require('../functions/delay');
 
 module.exports = {
     name: 'delete',
@@ -33,5 +34,3 @@ module.exports = {
         });         
     }
 };
-
-delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
