@@ -20,11 +20,14 @@ Playing decrypto board game on discord!
     - [x] DM execute commands (DM commands handler)
 - [x] Check if encrypter's description is repeat.
 - [x] history commands list all descriptions.
+    - [x] show current descriptions
+    - [x] show specific team descriptions   
 - [x] Create 3 voice channel. 1 for players who are join. 2 for team.
-- [ ] Move palyers to voice channel
-- [ ] Anti-cheat(Current encrypter not allow to tpye anything).
+- [x] Move palyers to voice channel.
+- [ ] play bgm in round end.
+- [x] Anti-cheat(Current encrypter not allow to tpye anything).
 	- [x] If encrypter type any words it will reset the codes and sending message to both game channels "@username cheating".
-	- [ ] Current encrypter will add temp muted role. that means can't type and speak in their team channels.
+	- [x] Current encrypter will add temp muted role. that means can't type and speak in their team channels.
 - [ ] DM Help center.
     - [x] sending cusotm DM to user with bot (id, content).
     - [ ] navigation guide.
