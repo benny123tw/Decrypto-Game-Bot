@@ -22,7 +22,14 @@ const shuffle = function shuffleArray(array) {
     return array;
 }
 
+/**
+ * 
+ * @param {Object} message 
+ * @param {Object} bot 
+ * @param {Object} Discord 
+ */
 const autoAssign = async (message, bot, Discord) => {
+    const language = bot.Language;
     
     let gameData = await gameModel.findOne({serverId: message.guild.id});
 
@@ -32,9 +39,9 @@ const autoAssign = async (message, bot, Discord) => {
                 {$set:{"blueTeam.encrypterId": gameData.blueTeam.encryptersList[0]}}, {new: true})
                 .then(async result =>{
                     const bt_encrypter = new Discord.MessageEmbed()
-                    .setColor(teamObj.BLUE.color)
-                    .setTitle('Blue Team Encrypter')
-                    .setDescription(`${message.guild.members.cache.get(result.blueTeam.encrypterId).user.username} is current encrypter!`)
+                    .setColor(language.embed.encrypter.color(gameData.curEncrypterTeam))
+                    .setTitle(language.embed.encrypter.title(gameData.curEncrypterTeam))
+                    .setDescription(language.embed.encrypter.description(message.guild.members.cache.get(result.blueTeam.encrypterId).user.username))
                     .setThumbnail(message.guild.members.cache.get(result.blueTeam.encrypterId).user.avatarURL())
                     .setFooter(
                         `${bot.config.footer}`
@@ -55,9 +62,9 @@ const autoAssign = async (message, bot, Discord) => {
                 {$set:{"redTeam.encrypterId": gameData.redTeam.encryptersList[0]}}, {new: true})
                 .then(async result =>{
                     const rt_encrypter = new Discord.MessageEmbed()
-                    .setColor(teamObj.RED.color)
-                    .setTitle('Red Team Encrypter')
-                    .setDescription(`${message.guild.members.cache.get(result.redTeam.encrypterId).user.username} is current encrypter!`)
+                    .setColor(language.embed.encrypter.color(gameData.curEncrypterTeam))
+                    .setTitle(language.embed.encrypter.title(gameData.curEncrypterTeam))
+                    .setDescription(language.embed.encrypter.description(message.guild.members.cache.get(result.redTeam.encrypterId).user.username))
                     .setThumbnail(message.guild.members.cache.get(result.redTeam.encrypterId).user.avatarURL())
                     .setFooter(
                         `${bot.config.footer}`
@@ -84,9 +91,11 @@ const autoAssign = async (message, bot, Discord) => {
  * @param {Object} options
  */
 const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, gameData) => {
+    const language = bot.Language;
+
     // check arguments 2 is number
-    if (isNaN(args[1])) return message.reply(`Please Enter the number`);
-    if (!args[1]) return message.reply(`Please Enter hwo many players will join`);
+    if (isNaN(args[1])) return message.reply(language.error.distribute.isNaN);
+    if (!args[1]) return message.reply(language.error.distribute.noNumber);
 
     // init settings 
     const reactionFilter = (reaction, user) => reaction.emoji.name === '🤣';
@@ -97,10 +106,10 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
 
     // join embed settings
     const joinEmbed = new Discord.MessageEmbed()
-    .setColor('#e42643')
-    .setTitle('React to join!')
+    .setColor(language.embed.random.color)
+    .setTitle(language.embed.random.title)
     .addFields(
-        { name: `Participate: ${args[1]}`, value: `none`, inline: false },
+        { name: language.embed.random.fields.number(args[1]), value: `none`, inline: false },
         { name: '\u200B', value: '\u200B' },
     )
     .setFooter(
@@ -128,11 +137,12 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                 let embedLikeField = Object.assign({}, joinEmbed.fields[0]);
                 embedLikeField.value = mReaction.users.cache.filter(user => !user.bot)
                     .map(user => user.username);
+                embedLikeField.name = language.embed.random.fields.number(args[1] - embedLikeField.value.length);
 
                 // new embed join the new likefield
                 const newEmbed = new Discord.MessageEmbed()
-                .setColor('#e42643')
-                .setTitle('React to join!')
+                .setColor(language.embed.random.color)
+                .setTitle(language.embed.random.title)
                 .addFields(
                     embedLikeField,
                     { name: '\u200B', value: '\u200B' },
@@ -154,11 +164,12 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                     embedLikeField.value = mReaction.users.cache.filter(user => !user.bot)
                     .map(user => user.username);
                 }
+                embedLikeField.name = language.embed.random.fields.number(args[1] - embedLikeField.value.length);
 
                 // new embed join the new likefield
                 const newEmbed = new Discord.MessageEmbed()
-                .setColor('#e42643')
-                .setTitle('React to join!')
+                .setColor(language.embed.random.color)
+                .setTitle(language.embed.random.title)
                 .addFields(
                     embedLikeField,
                     { name: '\u200B', value: '\u200B' },
@@ -241,44 +252,50 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                 });
 
                 const newEmbed = new Discord.MessageEmbed()
-                .setColor('#e42643')
-                .setTitle('Final Result')
+                .setColor(language.embed.result.color)
+                .setTitle(language.embed.result.title)
                 .addFields(
-                    { name: `${blueTeamEmoji} Blue Team`, value: `${blueTeam.join('\n') || `none`}` },
-                    { name: `${redTeamEmoji} Red Team`, value: `${redTeam.join('\n') || `none`}` },
+                    { name: language.embed.result.fields.blue(blueTeamEmoji), value: `${blueTeam.join('\n') || `none`}` },
+                    { name: language.embed.result.fields.blue(redTeamEmoji), value: `${redTeam.join('\n') || `none`}` },
                 )
                 .setFooter(
                     `${bot.config.footer}`,
                 );
-                await loading(message, gameData.options, newEmbed, Discord);
+                await loading(message, gameData.options, newEmbed, Discord, language);
 
                 if (gameData.options.autoAssign)
                     autoAssign(message, bot, Discord);
             });
         })   
+    
+    /**
+     * Sending `reset codes` message to both channels and show the current tokens each team
+     */
+     message.client.channels.cache.get(gameData.gameRooms[1]).send(language.start.encrypterRound(gameData.curEncrypterTeam));
+     message.client.channels.cache.get(gameData.gameRooms[2]).send(language.start.encrypterRound(gameData.curEncrypterTeam));    
 }
 
 const delay = require('../functions/delay');
-const loading = async (message, options, embedMessage, Discord) => {
+const loading = async (message, options, embedMessage, Discord, language) => {
     let st = '';
-    message.channel.send(`Loading`).then( async msg => {
+    message.channel.send(language.distribute.load.loading).then( async msg => {
         for (let i = 0; i <4; i++) {
             st += '..'
             if (i % 3 === 0) st = '';
-            msg.edit(`Loading${st}`);
+            msg.edit(`${language.distribute.load.loading}${st}`);
             await delay(500);
         }
-        msg.edit(`Loading Completed!`);
+        msg.edit(language.distribute.load.completed);
         await delay(500);
         msg.channel.send(embedMessage);
 
         const optionsEmbed = new Discord.MessageEmbed()
-                .setColor('#e42643')
-                .setTitle('Options')
+                .setColor(language.embed.distribute.color)
+                .setTitle(language.embed.distribute.title)
                 .addFields(
-                    { name: 'Game Mode', value: options.gameMode, inLine: true},
-                    { name: 'Rounds', value: options.rounds, inLine: true},
-                    { name: 'Auto Assign', value: options.autoAssign, inLine: true},
+                    { name: language.embed.distribute.mode, value: options.gameMode, inLine: true},
+                    { name: language.embed.distribute.rounds, value: options.rounds, inLine: true},
+                    { name: language.embed.distribute.autoAssign, value: options.autoAssign, inLine: true},
                 )
         msg.channel.send(optionsEmbed);
     });
@@ -297,6 +314,7 @@ const deleteMessage = (message) => {
  * @param {Object} options
  */
 const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData) => {
+    const language = bot.Language;
     const channel = message.channel.id;
     const blueTeamRole = gameData.gameRoles[0];
     const redTeamRole = gameData.gameRoles[1];
@@ -305,10 +323,9 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData) =>
     const redTeamEmoji = '🔸';
 
     let embed = new Discord.MessageEmbed()
-        .setColor('#e42643')
-        .setTitle('Choose your TEAM!')
-        .setDescription(`\n\n${blueTeamEmoji} for blue team\n` 
-            + `${redTeamEmoji} for red team`);
+        .setColor(language.embed.normal.color)
+        .setTitle(language.embed.normal.title)
+        .setDescription(language.embed.normal.description(blueTeamEmoji, redTeamEmoji));
 
     let messageEmbed;
     await message.channel.send(embed)
@@ -409,11 +426,11 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData) =>
         redTeamID = shuffle(redTeamID);
 
         const newEmbed = new Discord.MessageEmbed()
-        .setColor('#e42643')
-        .setTitle('Final Result')
+        .setColor(language.embed.result.color)
+        .setTitle(language.embed.result.title)
         .addFields(
-            { name: `${blueTeamEmoji} Blue Team`, value: `${blueTeam.join('\n') || `none`}` },
-            { name: `${redTeamEmoji} Red Team`, value: `${redTeam.join('\n') || `none`}` },
+            { name: language.embed.result.fields.blue(blueTeamEmoji), value: `${blueTeam.join('\n') || `none`}` },
+            { name: language.embed.result.fields.red(redTeamEmoji), value: `${redTeam.join('\n') || `none`}` },
             { name: '\u200B', value: '\u200B' },
         )
         .setFooter(
@@ -467,6 +484,12 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData) =>
         if (gameData.options.autoAssign)
             autoAssign(message, bot, Discord);
     }, 12500);
+
+    /**
+         * Sending `reset codes` message to both channels and show the current tokens each team
+         */
+     message.client.channels.cache.get(gameData.gameRooms[1]).send(language.start.encrypterRound(gameData.curEncrypterTeam));
+     message.client.channels.cache.get(gameData.gameRooms[2]).send(language.start.encrypterRound(gameData.curEncrypterTeam));    
 };
 
 module.exports = {

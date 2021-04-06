@@ -61,7 +61,7 @@ const reset = async (message, bot) => {
 
     if (gameData.curGames >= gameData.options.rounds) onGame = false;
     
-    if (onGame) roundMessage(message, gameData.curGames);
+    if (onGame) roundMessage(message, gameData.curGames, bot.language);
 
     //unpin all bot's pinned message in both game rooms
     message.client.channels.cache.get(gameData.gameRooms[1]).messages.fetchPinned()
@@ -130,11 +130,11 @@ const playBgm = async (guild, gameData) => {
     });
 }
 
-const roundMessage = (message, round) => {
+const roundMessage = (message, round, language) => {
 
     const newRoundEmbed = new Discord.MessageEmbed()
-    .setColor('#e42643')
-    .setTitle(`Round ${round}`)
+    .setColor(language.embed.roundChecker.round.color)
+    .setTitle(language.embed.roundChecker.round.title(round))
     .setFooter(
         `${bot.config.footer}`,
     );
@@ -144,11 +144,11 @@ const roundMessage = (message, round) => {
 }
 
 const gameOverMessage = (message, gameData, team, bot) => {
-
+    const language = bot.Language;
     const gameOverEmbed = new Discord.MessageEmbed()
-    .setColor(`${teamObj[team.toUpperCase()].color}`)
-    .setTitle(`Game Over`)
-    .setDescription(`${team} Team Is Winner!\nType \`scoreboard\` to see your score!`)
+    .setColor(language.embed.roundChecker.gameOver.color(team))
+    .setTitle(language.embed.roundChecker.gameOver.title)
+    .setDescription(language.embed.roundChecker.gameOver.description(team))
     .setFooter(
         `${bot.config.footer}`,
     );

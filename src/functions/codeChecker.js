@@ -1,6 +1,4 @@
 const gameModel = require('../models/gameSchema');
-const gameDB = require('../functions/gameDB');
-const playerModel = require('../models/playerSchema');
 const chalk = require('chalk');
 
 const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, Discord }, DB) => {
@@ -55,6 +53,8 @@ const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, 
 
 const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger, Discord }, DB) => {
 
+    const language = bot.Language;
+
     if (DB.player.team === 'BLUE') {
         console.log(`ans: BLUE`)
         if (encrypter && encrypter.team === 'BLUE') {
@@ -102,9 +102,9 @@ const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger
 
     message.react(`❌`);
     if (gameData.curEncrypterTeam === 'BLUE')
-        message.channel.send(`The codes are: **${gameData.blueTeam.curCodes.join(', ')}**`);
+        message.channel.send(language.codeChecker.wrong(gameData.blueTeam.curCodes));
     if (gameData.curEncrypterTeam === 'RED')
-        message.channel.send(`The codes are: **${gameData.redTeam.curCodes.join(', ')}**`);
+        message.channel.send(language.codeChecker.wrong(gameData.redTeam.curCodes));
     return true;
 }
 

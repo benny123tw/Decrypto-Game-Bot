@@ -7,6 +7,7 @@ module.exports = {
     permissions: ["ADMINISTRATOR", "MANAGE_CHANNELS"],
     description: 'Quick stop the game and reset all elem includes players\' and server\'s',
     async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+        const language = bot.Language;
 
         const optionsDefault = {
             gameMode: "normal",
@@ -82,6 +83,6 @@ module.exports = {
         });
 
 
-        message.channel.send(`All elem has been reset.`);
+        message.channel.send(language.stop.reset);
     },
 };

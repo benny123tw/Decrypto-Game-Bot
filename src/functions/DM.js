@@ -1,8 +1,8 @@
 const chalk = require('chalk');
-// const playerModel = require('../models/playerSchema');
-const serverModel = require('../models/serverSchema');
+const playerModel = require('../models/playerSchema');
 
 const execute = async ({bot, Discord, logger, message}, {user}) => {
+    const language = bot.Language;
     console.log(`${chalk.italic.cyanBright(message.author.username)} is sending DM to ${chalk.italic.cyanBright(bot.config.name)}\nContent: ${chalk.blueBright(message.content)}`)    
     console.log(message.author)
     /**
@@ -36,11 +36,10 @@ const execute = async ({bot, Discord, logger, message}, {user}) => {
         command.execute(server, {user: user});
     } catch (error) {
         logger.error(chalk.red(error));
-        message.reply('there was an error trying to execute that command!');
+        message.reply(language.error.message.execute);
     }
 }
 
-const playerModel = require('../models/playerSchema');
 const custormerService = async ({bot, Discord, logger, message}, {user}) => {
     await playerModel.findOneAndUpdate({playerId: user.playerId},{$set:{onCustomer:true}});
     message.channel.send(`Hi <@${message.author.id}> welcome to ${bot.config.name} Help Center!`);

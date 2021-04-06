@@ -15,7 +15,7 @@ module.exports = {
     permissions: [],
     description: 'start the decrypto game! (normal / random)',
     async execute({ message, args, cmd, bot, logger, Discord }, DB) {
-
+        const language = bot.Language;
         /**
          *  init options object
          */
@@ -29,7 +29,7 @@ module.exports = {
 
         // setting rounds. when over 10 set rounds to 3
         if (!isNaN(args[0])) {
-            if (args[0] > 10) message.reply('Cannot set over 10 rounds. Rounds set to 3 now.');
+            if (args[0] > 10) message.reply(language.error.start.rounds);
             options.rounds = args[0] > 10 ? 3 : args[0];
             args.shift();
         }
@@ -281,12 +281,6 @@ module.exports = {
         if (options.gameMode === 'normal')
             distribute.normal({ message, args, cmd, bot, logger, Discord }, gameData);
         // distribute.test({ message, args, cmd, bot, logger, Discord }, gameData);
-        
-       /**
-         * Sending `reset codes` message to both channels and show the current tokens each team
-         */
-        message.client.channels.cache.get(gameData.gameRooms[1]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
-        message.client.channels.cache.get(gameData.gameRooms[2]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);    
     },
 };
 

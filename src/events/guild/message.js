@@ -2,9 +2,10 @@ const chalk = require('chalk');
 const playerDB = require('../../functions/playerDB');
 const decryptoDB = require('../../functions/serverDB');
 const DM = require('../../functions/DM');
+const lanHandler = require('../../handlers/language_handler');
+const serverModel = require('../../models/serverSchema');
 
 module.exports = async (bot, Discord, logger, message) => {
-
     /**
      * ignore every Bots message.
      * this function has to be here, cause we don't want bot generate the player data.
@@ -48,6 +49,10 @@ module.exports = async (bot, Discord, logger, message) => {
         .catch(err => console.log(err));
     if (!serverData || serverData === undefined) return;
 
+    if (serverData.language !== bot.Language) lanHandler(bot, serverData.language);
+
+    const language = bot.Language;
+
     /**
      * Ignore all messages without our prefix.
      */
@@ -78,7 +83,7 @@ module.exports = async (bot, Discord, logger, message) => {
                     return console.log(`Invalid Permissions ${perm}`);
                 }
 
-                /**
+                /** 
                  * Check if member has that permissions
                  */
                 if (!message.member.hasPermission(perm)) {
@@ -86,7 +91,7 @@ module.exports = async (bot, Discord, logger, message) => {
                 }
             }
             if (invalidPerms.length) {
-                return message.channel.send(`Missing Permissions: \`${invalidPerms}\``);
+                return message.channel.send(`${language.error.message.permission}\`${invalidPerms}\``);
             }
         }
 
@@ -108,7 +113,7 @@ module.exports = async (bot, Discord, logger, message) => {
         command.execute(server, DB);
     } catch (error) {
         logger.error(chalk.red(error));
-        message.reply('there was an error trying to execute that command!');
+        message.reply(language.error.message.execute);
     }
 };
 

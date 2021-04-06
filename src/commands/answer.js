@@ -13,6 +13,7 @@ module.exports = {
     permissions: [],
     description: 'answer the codes',
     async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+        const language = bot.Language;
 
         /**
          * get game Data from DB and handle Promise object.
@@ -28,7 +29,7 @@ module.exports = {
          */
         if (!gameData.onGame || gameData.redTeam.keywords.length === 0 
             || gameData.blueTeam.keywords.length === 0 || gameData[teamObj[gameData.curEncrypterTeam].name].curCodes.length === 0) 
-                return message.channel.send(`some team haven't draw codes/keywords yet`);        
+                return message.channel.send(language.error.answer.notDraw);        
 
         /**
          *  if answerer is encrypter = cheating 
@@ -37,8 +38,8 @@ module.exports = {
          */
         if (gameData.curEncrypterTeam === 'BLUE' && message.author.id === gameData.blueTeam.encrypterId) {
             
-            message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(`<@${gameData.blueTeam.encrypterId}> cheating!!\nCodes have been reset!`);
-            message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(`<@${gameData.blueTeam.encrypterId}> cheating!!\nCodes have been reset!`);
+            message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(`<@${gameData.blueTeam.encrypterId}>${language.answer.cheat.channels}`);
+            message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(`<@${gameData.blueTeam.encrypterId}>${language.answer.cheat.channels}`);
             await gameModel.findOneAndUpdate(
                 {
                     serverId: message.guild.id,
@@ -54,13 +55,13 @@ module.exports = {
                     }
                 }
             )
-            return message.reply(`Why you cheating huh?`);
+            return message.reply(language.answer.cheat.person);
         }
 
         if (gameData.curEncrypterTeam === 'RED' && message.author.id === gameData.redTeam.encrypterId) {
             
-            message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(`<@${gameData.redTeam.encrypterId}> cheating!!\nCodes have been reset!`);
-            message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(`<@${gameData.redTeam.encrypterId}> cheating!!\nCodes have been reset!`);
+            message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(`<@${gameData.redTeam.encrypterId}>${language.answer.cheat.channels}`);
+            message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(`<@${gameData.redTeam.encrypterId}>${language.answer.cheat.channels}`);
             await gameModel.findOneAndUpdate(
                 {
                     serverId: message.guild.id,
@@ -77,12 +78,12 @@ module.exports = {
                 }
             )
             
-            return message.reply(`Why you cheating huh?`);
+            return message.reply(language.answer.cheat.person);
         }
 
         // check if team send two times answer
         if (gameData.answerers.includes(DB.player.team))
-            return message.reply(`Don't send the answer 2 times`);
+            return message.reply(language.answer.repeat);
 
         switch (DB.player.team) {
             case 'BLUE':
@@ -114,9 +115,9 @@ module.exports = {
                 let checker = await codeChecker.codeIncorrectChecker(encrypter, { message, args, cmd, bot, logger, Discord }, DB);
                 if (!checker) {
                     if (encrypter.team === 'BLUE')
-                        return message.channel.send(`The codes are: **${gameData.blueTeam.curCodes.join(', ')}**`);
+                        return message.channel.send(language.answer.wrong(gameData.blueTeam.curCodes));
                     if (encrypter.team === 'RED')
-                        return message.channel.send(`The codes are: **${gameData.redTeam.curCodes.join(', ')}**`);
+                        return message.channel.send(language.answer.wrong(gameData.redTeam.curCodes));
                 }
             }
         }        
@@ -142,21 +143,21 @@ module.exports = {
                 let checker = await codeChecker.codeIncorrectChecker(encrypter, { message, args, cmd, bot, logger, Discord }, DB);
                 if (!checker) {
                     if (encrypter.team === 'BLUE')
-                        return message.channel.send(`The codes are: **${gameData.blueTeam.curCodes.join(', ')}**`);
+                        return message.channel.send(language.answer.wrong(gameData.blueTeam.curCodes));
                     if (encrypter.team === 'RED')
-                        return message.channel.send(`The codes are: **${gameData.redTeam.curCodes.join(', ')}**`);
+                        return message.channel.send(language.answer.wrong(gameData.redTeam.curCodes));
                 }
             }
         }
 
         gameData = await gameModel.findOne({ serverId: message.guild.id });
         const scoreEmbed = new Discord.MessageEmbed()
-            .setColor('#e42643')
-            .setTitle(`Current Tokens`)
+            .setColor(language.embed.score.color)
+            .setTitle(language.embed.score.title)
             .addFields(
-                { name: 'BLUE', value: `✅ INT Token: **${gameData.blueTeam.intToken}**\n\n😥 MIS Token: **${gameData.blueTeam.misToken}**`},
+                { name: language.embed.score.fields.blue, value: `${language.embed.score.fields.intToken}**${gameData.blueTeam.intToken}**\n\n${language.embed.score.fields.misToken}**${gameData.blueTeam.misToken}**`},
                 { name: '\u200B', value: '\u200B' },
-                { name: 'RED', value: `✅ INT Token: **${gameData.redTeam.intToken}**\n\n😥 MIS Token: **${gameData.redTeam.misToken}**` },
+                { name: language.embed.score.fields.red, value: `${language.embed.score.fields.intToken}**${gameData.redTeam.intToken}**\n\n${language.embed.score.fields.misToken}**${gameData.redTeam.misToken}**` },
                 { name: '\u200B', value: '\u200B' },
             )
             .setFooter(
@@ -276,8 +277,8 @@ module.exports = {
         /**
          * Sending `reset codes` message to both channels and show the current tokens each team
          */
-        message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);
-        message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(`It's **${gameData.curEncrypterTeam} Team Encrypter** round!`);    
+        message.client.channels.cache.get(gameData.gameRooms[rooms.blueTeamTextChannel]).send(language.answer.encrypterRound(gameData.curEncrypterTeam));
+        message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(language.answer.encrypterRound(gameData.curEncrypterTeam));    
         
 
         // reset answerers

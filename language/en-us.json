@@ -1,0 +1,122 @@
+{ 
+    "language": "en-us",
+    "error" : {
+        "message": {
+            "permission": "Missing Permissions: ", 
+            "execute": "There was an error trying to execute that command!"
+        },
+        "answer": { 
+            "notDraw": "Some team haven't draw codes/keywords yet"           
+        },
+        "history": {
+            "description": "Current encrypter haven't send descriptions yet."
+        },
+        "keywords": {
+            "add": "Please follow this syntax `$kw a (keyword) index(option)`", 
+            "del": "Please follow this syntax `$kw d (index || keyword)`", 
+            "update": { 
+                "param": "Please follow this syntax `$kw u (index) (keyword)`",
+                "index": "Please check your index number!"
+            }
+        },
+        "start": { 
+            "rounds": "Cannot set over 10 rounds. Rounds set to 3 now." 
+        },
+        "distribute": {
+            "isNaN": "Please Enter the number.", 
+            "noNumber": "Please Enter how many players will join!"
+        }
+    },
+    "answer" : {
+        "cheat": { 
+            "person": "Why you cheating huh?",
+            "channels": " cheating!!\nCodes have been reset!"
+        },        
+        "repeat": "Don't send the answer 2 times"
+    },
+    "start" : {   
+
+    },
+    "delete" : {
+        "onGame": "Please do not use this command while game is still playing"
+    },
+    "stop" : {
+        "reset": "All elem has been reset."
+    },
+    "codeChecker" : {
+
+    },
+    "distribute" : {
+        "load": {
+            "loading": "Loading",
+            "completed": "Loading Completed!"
+        }        
+    },
+    "embed" : {
+        "score": {
+            "title": "Current Tokens",
+            "fields": {
+                "blue": "Blue",
+                "red": "Red",
+                "intToken": "✅ Int Token",
+                "misToken": "😥 Mis Token"
+            }
+        },
+
+        "help": {
+            "title": "All Commands",
+            "description": "Prefix: "
+        },
+
+        "descriptions": {
+            "blue": { 
+                "title": "Blue Team Descriptions"
+            },
+            "red": {
+                "title": "Red Team Descriptions"
+            }
+        },
+
+        "scoreboard": {
+
+        },
+
+        "encrypter": {
+        },
+
+        "random": {
+            "title": "React to join!",
+            "fields": {
+
+            }
+        },
+
+        "normal": {
+            "title": "Choose your TEAM!"
+        },
+
+        "result": {
+            "title": "Final Result",
+            "fields": {
+
+            }
+        },
+
+        "distribute": {
+            "title": "Options",
+            "mode": "Game Mode",
+            "rounds": "Rounds",
+            "autoAssign": "Auto Assign"
+        },
+
+        "roundChecker": {
+            "round": {
+            },
+
+            "gameOver": {
+                "title": "Game Over"
+            }
+        }
+
+    }
+}
