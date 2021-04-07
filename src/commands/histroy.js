@@ -6,13 +6,15 @@ module.exports = {
     aliases: ['hs', 'current'],
     permissions: [],
     description: 'list descriptions history [red/blue] or list current descriptions',
-    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+    async execute(options = {}, DB = {}) {
+        const { message, args, cmd, bot, logger, Discord, language } = options;
+        const { player, server } = DB;
 
-        if ((args[0] !== 'red' && args[0] !== 'blue') && args.length !== 0) return message.reply(`cannot recognize \'${args[0]}\' as a team`);
+        if ((args[0] !== 'red' && args[0] !== 'blue') && args.length !== 0) return message.reply(language.error.history.teamParams(args[0]));
 
         let gameData = await gameModel.findOne({serverId: message.guild.id});
 
-        if (cmd === 'current' && !gameData[teamObj[gameData.curEncrypterTeam].name].isDescribe) return message.reply(`Current encrypter haven't send descriptions yet.`);
+        if (cmd === 'current' && !gameData[teamObj[gameData.curEncrypterTeam].name].isDescribe) return message.reply(language.error.history.description);
 
         /**
          *  list current descriptions if current encrypter has sent it
@@ -49,8 +51,8 @@ module.exports = {
 
         //create embed 
         const bt_descriptionEmbed = new Discord.MessageEmbed()
-                .setColor('#31c5eb') //lightblue hex code
-                .setTitle(`Blue Team Descriptions`)
+                .setColor(language.embed.descriptions.blue.color) //lightblue hex code
+                .setTitle(language.embed.descriptions.blue.title)
                 .addFields(
                     { name: '1', value: `${descriptions.blueTeam._1.join(', ')  || 'none'}`},
                     { name: '2', value: `${descriptions.blueTeam._2.join(', ')  || 'none'}`},
@@ -63,8 +65,8 @@ module.exports = {
 
         //create embed 
         const rt_descriptionEmbed = new Discord.MessageEmbed()
-            .setColor('#f7526b') //lightred hex code
-            .setTitle(`Red Team Descriptions`)
+            .setColor(language.embed.descriptions.red.color) //lightred hex code
+            .setTitle(language.embed.descriptions.red.title)
             .addFields(
                 { name: '1', value: `${descriptions.redTeam._1.join(', ')  || 'none'}`},
                 { name: '2', value: `${descriptions.redTeam._2.join(', ')  || 'none'}`},

@@ -1,11 +1,13 @@
-const language = require('./Language');
-const data = require('./zh-cn.json');
+const language = require('../Language');
+const data = require('../json/zh-cn.json');
+
 class zh_CN extends language {
     constructor() {
         super(data);
     }
 
     _teamParams = (param) =>`无法识别队伍： \'${param}\'`;
+    _languageParam = (param) => `无法识别语言： \'${param}\'`;
 
     _wrong = (arr = []) => `正确密码为： **${arr.join(', ')}**`;
 

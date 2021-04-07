@@ -3,7 +3,9 @@ module.exports = {
     aliases: ['who'],
     permissions: [],
     description: 'about me',
-    execute({ message, args, cmd, bot, logger, Discord }, DB) {
+    execute(options) {
+        const { message, bot, Discord} = options;
+
         const aboutEmbed = new Discord.MessageEmbed()
             .setColor('#e42643')
             .setTitle('關於我')

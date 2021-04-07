@@ -2,10 +2,9 @@ const chalk = require('chalk');
 const playerDB = require('../../functions/playerDB');
 const decryptoDB = require('../../functions/serverDB');
 const DM = require('../../functions/DM');
-const lanHandler = require('../../handlers/language_handler');
-const serverModel = require('../../models/serverSchema');
 
 module.exports = async (bot, Discord, logger, message) => {
+    
     /**
      * ignore every Bots message.
      * this function has to be here, cause we don't want bot generate the player data.
@@ -49,10 +48,8 @@ module.exports = async (bot, Discord, logger, message) => {
         .catch(err => console.log(err));
     if (!serverData || serverData === undefined) return;
 
-    if (serverData.language !== bot.Language) lanHandler(bot, serverData.language);
-
-    const language = bot.Language;
-
+    const language = bot.Language[serverData.language || 'en-US'];
+    
     /**
      * Ignore all messages without our prefix.
      */
@@ -102,15 +99,16 @@ module.exports = async (bot, Discord, logger, message) => {
             server: serverData,
             player: playerData,
         };
-        const server = {
-            message,
-            args,
-            cmd,
-            bot,
-            logger,
-            Discord,
+        const options = {
+            message: message,
+            args: args,
+            cmd: cmd,
+            bot: bot,
+            logger: logger,
+            Discord: Discord,
+            language: language
         };
-        command.execute(server, DB);
+        command.execute(options, DB);
     } catch (error) {
         logger.error(chalk.red(error));
         message.reply(language.error.message.execute);

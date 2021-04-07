@@ -5,7 +5,9 @@ module.exports = {
     aliases: ['rp'],
     permissions: [],
     description: 'Report someone to bot and launch a vote',
-    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+    async execute(options = {}, DB = {}) {
+        const { message, args, cmd, bot, logger, Discord, language } = options;
+        const { player, server } = DB;
 
         const mentions = message.mentions.members.array();
 

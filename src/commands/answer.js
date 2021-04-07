@@ -12,8 +12,9 @@ module.exports = {
     aliases: ['a', 'ans'],
     permissions: [],
     description: 'answer the codes',
-    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
-        const language = bot.Language;
+    async execute(options = {}, DB = {}) {
+        const { message, args, cmd, bot, logger, Discord, language } = options;
+        const { player } = DB;
 
         /**
          * get game Data from DB and handle Promise object.
@@ -82,10 +83,10 @@ module.exports = {
         }
 
         // check if team send two times answer
-        if (gameData.answerers.includes(DB.player.team))
+        if (gameData.answerers.includes(player.team))
             return message.reply(language.answer.repeat);
 
-        switch (DB.player.team) {
+        switch (player.team) {
             case 'BLUE':
                 await gameModel.findOneAndUpdate({serverId:message.guild.id},{$push:{answerers:'BLUE'}});
                 break;
@@ -108,11 +109,11 @@ module.exports = {
             if (args[0] == gameData.blueTeam.curCodes[0] && args[1] == gameData.blueTeam.curCodes[1]
                 && args[2] == gameData.blueTeam.curCodes[2]) {
                     console.log(`correct`)
-                let checker = await codeChecker.codeCorrectChecker(encrypter, { message, args, cmd, bot, logger, Discord }, DB);
+                let checker = await codeChecker.codeCorrectChecker(encrypter, options, DB);
                 if (!checker) return message.react(`✅`); 
             } else {
                 console.log(`incorrect`)
-                let checker = await codeChecker.codeIncorrectChecker(encrypter, { message, args, cmd, bot, logger, Discord }, DB);
+                let checker = await codeChecker.codeIncorrectChecker(encrypter, options, DB);
                 if (!checker) {
                     if (encrypter.team === 'BLUE')
                         return message.channel.send(language.answer.wrong(gameData.blueTeam.curCodes));
@@ -136,11 +137,11 @@ module.exports = {
             if (args[0] == gameData.redTeam.curCodes[0] && args[1] == gameData.redTeam.curCodes[1]
                 && args[2] == gameData.redTeam.curCodes[2]) {
                 console.log(`correct`)
-                let checker = await codeChecker.codeCorrectChecker(encrypter, { message, args, cmd, bot, logger, Discord }, DB);
+                let checker = await codeChecker.codeCorrectChecker(encrypter, options, DB);
                 if (!checker) return message.react(`✅`); 
             } else {
                 console.log(`incorrect`)
-                let checker = await codeChecker.codeIncorrectChecker(encrypter, { message, args, cmd, bot, logger, Discord }, DB);
+                let checker = await codeChecker.codeIncorrectChecker(encrypter, options, DB);
                 if (!checker) {
                     if (encrypter.team === 'BLUE')
                         return message.channel.send(language.answer.wrong(gameData.blueTeam.curCodes));
@@ -202,13 +203,13 @@ module.exports = {
             if ((server.blueTeam.intToken === 2 && server.blueTeam.misToken === 2)
                 || (server.redTeam.intToken === 2 && server.redTeam.misToken === 2)) {
                 //do smthing tie fn
-                winningTeam = await roundChecker.tie({ message, bot, logger, Discord }, DB, server);
+                winningTeam = await roundChecker.tie(options, DB, server);
             }
 
             else if ((server.blueTeam.intToken === 2 && server.redTeam.intToken === 2)
                     || server.blueTeam.intToken === 2 && server.redTeam.intToken === 2) {
                 //do smthing tie fn
-                winningTeam = await roundChecker.tie({ message, bot, logger, Discord }, DB, server);    
+                winningTeam = await roundChecker.tie(options, DB, server);    
             }
 
             // else if (rounds > 8) { // do tie fn}
@@ -222,7 +223,7 @@ module.exports = {
                 await playerModel.findOneAndUpdate(
                     { curServerId: message.guild.id, team: 'BLUE' }, 
                     { $inc: { total_Games: 1, wins: 1}});
-                await roundChecker.reset(message, bot);
+                await roundChecker.reset(options);
 
                 winningTeam = 1;
             }
@@ -234,7 +235,7 @@ module.exports = {
                 await playerModel.findOneAndUpdate(
                     { curServerId: message.guild.id, team: 'BLUE' }, 
                     { $inc: { total_Games: 1, loses: 1}});
-                await roundChecker.reset(message, bot);
+                await roundChecker.reset(options);
 
                 winningTeam = 2;
             }
@@ -246,7 +247,7 @@ module.exports = {
                 await playerModel.findOneAndUpdate(
                     { curServerId: message.guild.id, team: 'RED' }, 
                     { $inc: { total_Games: 1, wins: 1}});
-                await roundChecker.reset(message, bot);
+                await roundChecker.reset(options);
 
                 winningTeam = 2;
             }
@@ -258,7 +259,7 @@ module.exports = {
                 await playerModel.findOneAndUpdate(
                     { curServerId: message.guild.id, team: 'RED' }, 
                     { $inc: { total_Games: 1, loses: 1}});
-                await roundChecker.reset(message, bot);
+                await roundChecker.reset(options);
 
                 winningTeam = 1;
             }       
@@ -268,7 +269,7 @@ module.exports = {
         }
 
         console.log(winningTeam)
-        if (!gameData.onGame) return roundChecker.gameOverMessage(message, gameData, _winningOjb[winningTeam], bot);
+        if (!gameData.onGame) return roundChecker.gameOverMessage(options, gameData, _winningOjb[winningTeam]);
         
         if (gameData.options.autoAssign)
                 autoAssign(message, bot, Discord); // random encrypter (repeat)

@@ -116,6 +116,11 @@
             "gameOver": {
                 "title": "Game Over"
             }
+        },
+
+        "language": {
+            "title": "Language set to English(US)",
+            "current": "Current language is English(US)"
         }
 
     }

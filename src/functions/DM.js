@@ -1,8 +1,16 @@
 const chalk = require('chalk');
 const playerModel = require('../models/playerSchema');
 
-const execute = async ({bot, Discord, logger, message}, {user}) => {
-    const language = bot.Language;
+/**
+ * @param {Object} options
+ * @param {String} options.message
+ * @param {Object} options.logger
+ * @param {Object} options.Discord
+ * @param {Object} user 
+ */
+const execute = async (options, user = {}) => {
+    const { message, bot, logger, Discord } = options;
+    
     console.log(`${chalk.italic.cyanBright(message.author.username)} is sending DM to ${chalk.italic.cyanBright(bot.config.name)}\nContent: ${chalk.blueBright(message.content)}`)    
     console.log(message.author)
     /**
@@ -25,7 +33,7 @@ const execute = async ({bot, Discord, logger, message}, {user}) => {
         const command =
             bot.DM_commands.get(cmd) || bot.DM_commands.find(a => a.aliases && a.aliases.includes(cmd));
         
-        const server = {
+        options = {
             message: message,
             args: args,
             cmd: cmd,
@@ -33,7 +41,7 @@ const execute = async ({bot, Discord, logger, message}, {user}) => {
             logger: logger,
             Discord: Discord,
         };
-        command.execute(server, {user: user});
+        command.execute(options, {user: user});
     } catch (error) {
         logger.error(chalk.red(error));
         message.reply(language.error.message.execute);

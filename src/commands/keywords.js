@@ -6,7 +6,10 @@ module.exports = {
     aliases: ['keyword', 'list keywords', 'kw'],
     permissions: ['ADMINISTRATOR', 'MANAGE_CHANNELS'],
     description: 'Keywords Query, Update, Delete, Add, \`$help keywords\` for more help',
-    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+    async execute(options = {}, DB = {}) {
+        const { message, args, cmd, bot, logger, Discord, language } = options;
+        const { player, server } = DB;
+        
         /**
          * get player Data from DB and handle Promise object.
          */

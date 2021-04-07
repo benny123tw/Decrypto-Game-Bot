@@ -6,7 +6,9 @@ module.exports = {
     aliases: ['del'],
     permissions: ['ADMINISTRATOR', 'MANAGE_CHANNELS'],
     description: 'Quick delete game rooms and roles',
-    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+    async execute(options = {}, DB = {}) {
+        const { message, args, cmd, bot, logger, Discord, language } = options;
+        const { player, server} = DB;
         /**
          * get player Data from DB and handle Promise object.
          */
@@ -27,10 +29,10 @@ module.exports = {
             await delay(500);
         }
 
-        // console.log(bot.client.guilds.cache.get(DB.server.serverID).roles.cache)
+        // console.log(bot.client.guilds.cache.get(server.serverID).roles.cache)
         gameData.gameRoles.forEach(role => {
-            if (bot.client.guilds.cache.get(DB.server.serverID).roles.cache.get(role) != undefined)
-                bot.client.guilds.cache.get(DB.server.serverID).roles.cache.get(role).delete();
+            if (bot.client.guilds.cache.get(server.serverID).roles.cache.get(role) != undefined)
+                bot.client.guilds.cache.get(server.serverID).roles.cache.get(role).delete();
         });         
     }
 };

@@ -23,13 +23,14 @@ const shuffle = function shuffleArray(array) {
 }
 
 /**
- * 
- * @param {Object} message 
- * @param {Object} bot 
- * @param {Object} Discord 
+ * @param {Object} options
+ * @param {String} options.message 
+ * @param {Object} options.bot 
+ * @param {Object} options.Discord 
+ * @param {language} options.language
  */
-const autoAssign = async (message, bot, Discord) => {
-    const language = bot.Language;
+const autoAssign = async (options = {}) => {
+    const { message, bot, Discord, language } = options;
     
     let gameData = await gameModel.findOne({serverId: message.guild.id});
 
@@ -86,12 +87,17 @@ const autoAssign = async (message, bot, Discord) => {
  * random team maker
  * react to join the team
  * $start random [participate quantity] to set max
- * @param {Object} serverObject 
- * @param {Object} gameData 
  * @param {Object} options
+ * @param {String} options.message
+ * @param {Array} options.args
+ * @param {String} options.cmd
+ * @param {Object} options.logger
+ * @param {Object} options.Discord
+ * @param {Object} options.language
+ * @param {Object} gameData
  */
-const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, gameData) => {
-    const language = bot.Language;
+const randomDistribute =  async (options, gameData) => {
+    const { message, args, cmd, bot, logger, Discord, language } = options;
 
     // check arguments 2 is number
     if (isNaN(args[1])) return message.reply(language.error.distribute.isNaN);
@@ -261,10 +267,10 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
                 .setFooter(
                     `${bot.config.footer}`,
                 );
-                await loading(message, gameData.options, newEmbed, Discord, language);
+                await loading(options, gameData.options, newEmbed);
 
                 if (gameData.options.autoAssign)
-                    autoAssign(message, bot, Discord);
+                    autoAssign(options);
             });
         })   
     
@@ -276,7 +282,9 @@ const randomDistribute =  async ({ message, args, cmd, bot, logger, Discord }, g
 }
 
 const delay = require('../functions/delay');
-const loading = async (message, options, embedMessage, Discord, language) => {
+const loading = async (options = {}, gameOptions, embedMessage) => {
+    const { message, args, cmd, bot, logger, Discord, language } = options;
+
     let st = '';
     message.channel.send(language.distribute.load.loading).then( async msg => {
         for (let i = 0; i <4; i++) {
@@ -293,9 +301,9 @@ const loading = async (message, options, embedMessage, Discord, language) => {
                 .setColor(language.embed.distribute.color)
                 .setTitle(language.embed.distribute.title)
                 .addFields(
-                    { name: language.embed.distribute.mode, value: options.gameMode, inLine: true},
-                    { name: language.embed.distribute.rounds, value: options.rounds, inLine: true},
-                    { name: language.embed.distribute.autoAssign, value: options.autoAssign, inLine: true},
+                    { name: language.embed.distribute.mode, value: gameOptions.gameMode, inLine: true},
+                    { name: language.embed.distribute.rounds, value: gameOptions.rounds, inLine: true},
+                    { name: language.embed.distribute.autoAssign, value: gameOptions.autoAssign, inLine: true},
                 )
         msg.channel.send(optionsEmbed);
     });
@@ -309,12 +317,18 @@ const deleteMessage = (message) => {
 
 /**
  * using react role to distribute
- * @param {Object} serverObject
- * @param {Object} gameData
  * @param {Object} options
+ * @param {String} options.message
+ * @param {Array} options.args
+ * @param {String} options.cmd
+ * @param {Object} options.logger
+ * @param {Object} options.Discord
+ * @param {Object} options.language
+ * @param {Object} gameData
  */
-const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData) => {
-    const language = bot.Language;
+const normal = async (options = {}, gameData) => {
+    const { message, args, cmd, bot, logger, Discord, language } = options;
+    
     const channel = message.channel.id;
     const blueTeamRole = gameData.gameRoles[0];
     const redTeamRole = gameData.gameRoles[1];
@@ -482,7 +496,7 @@ const normal = async ({ message, args, cmd, bot, logger, Discord }, gameData) =>
         message.channel.send(newEmbed);
 
         if (gameData.options.autoAssign)
-            autoAssign(message, bot, Discord);
+            autoAssign(options);
     }, 12500);
 
     /**

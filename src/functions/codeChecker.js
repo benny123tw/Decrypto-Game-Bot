@@ -1,9 +1,12 @@
 const gameModel = require('../models/gameSchema');
 const chalk = require('chalk');
 
-const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, Discord }, DB) => {
+const codeCorrectChecker = async (encrypter, options = {}, DB = {}) => {
+    const { message, args, cmd, bot, logger, Discord, language } = options;
+    const { player, server } = DB;
+
     // BLUE TEAM
-    if (DB.player.team === 'BLUE') {
+    if (player.team === 'BLUE') {
         console.log(`ans: BLUE`)
         // if encrypter team is RED than increase blue team's interception token
         if (encrypter && encrypter.team === 'RED') {
@@ -22,7 +25,7 @@ const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, 
     }
 
     // RED TEAM
-    if (DB.player.team === 'RED') {
+    if (player.team === 'RED') {
         console.log(`ans: RED`)
         // if encrypter team is BLUE than increase red team's interception token
         if (encrypter && encrypter.team === 'BLUE') {
@@ -51,11 +54,11 @@ const codeCorrectChecker = async (encrypter, { message, args, cmd, bot, logger, 
     return true;
 }
 
-const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger, Discord }, DB) => {
+const codeIncorrectChecker = async (encrypter, options = {}, DB = {}) => {
+    const { message, args, cmd, bot, logger, Discord, language } = options;
+    const { player, server } = DB;
 
-    const language = bot.Language;
-
-    if (DB.player.team === 'BLUE') {
+    if (player.team === 'BLUE') {
         console.log(`ans: BLUE`)
         if (encrypter && encrypter.team === 'BLUE') {
             logger.modules(`${chalk.blueBright(`Blue`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);
@@ -72,7 +75,7 @@ const codeIncorrectChecker = async (encrypter, { message, args, cmd, bot, logger
         }
     }
 
-    if (DB.player.team === 'RED') {
+    if (player.team === 'RED') {
         console.log(`ans: RED`)
         if (encrypter && encrypter.team === 'RED') {
         logger.modules(`${chalk.redBright(`Red`)} team got ${chalk.redBright(`Miscommunication Token`)}!`);

@@ -5,7 +5,10 @@ module.exports = {
     aliases: [],
     permissions: ['ADMINISTRATOR', 'MANAGE_CHANNELS'],
     description: 'Quick unpin the message',
-    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+    async execute(options = {}, DB = {}) {
+        const { message, args, cmd, bot, logger, Discord, language } = options;
+        const { player, server } = DB;
+
         // Get pinned messages
         message.channel.messages.fetchPinned()
         .then(messages => messages.forEach(message => {

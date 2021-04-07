@@ -7,13 +7,16 @@ module.exports = {
     aliases: ['d', 'keywrod', 'code', 'key', 'keywords', 'codes'],
     permissions: [],
     description: 'draw codes or keywords',
-    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+    async execute(options = {}, DB = {}) {
+        const { message, args, cmd, bot, logger, Discord, language } = options;
+        const { player, server } = DB;
+
         let gameData;
         await gameDB(bot, logger, message)
             .then(result => (gameData = result))
             .catch(err => console.log(err));
         
-        if (!gameData.onGame || !DB.player.onGame) return message.reply(`You're not in game`);
+        if (!gameData.onGame || !player.onGame) return message.reply(`You're not in game`);
         if (!gameData.gameRooms.includes(message.channel.id)) return message.reply(`Please type in Game Room!(Under Decrypto category)`);
 
         if(!args[0]) 
@@ -22,8 +25,8 @@ module.exports = {
         if(cmd.startsWith('key') || args[0].startsWith('key')) {
 
             // check if keywords have been drew
-            if (DB.player.team === 'BLUE' && gameData.blueTeam.keywords.length) return message.reply(`Keywords have been drew!`); 
-            else if (DB.player.team === 'RED' && gameData.redTeam.keywords.length) return message.reply(`Keywords have been drew!`); 
+            if (player.team === 'BLUE' && gameData.blueTeam.keywords.length) return message.reply(`Keywords have been drew!`); 
+            else if (player.team === 'RED' && gameData.redTeam.keywords.length) return message.reply(`Keywords have been drew!`); 
 
             let keyString = '', count = 1;
             let keyArray = drawCard(gameData.keywords, 4);
@@ -33,7 +36,7 @@ module.exports = {
             if (!gameData.blueTeam.keywords.length && !gameData.redTeam.keywords.length) 
                 await gameModel.findOneAndUpdate({serverId: message.guild.id}, {$inc:{curGames: 1}});
                 
-            if (DB.player.team === 'BLUE' && message.channel.id === gameData.gameRooms[1]) {
+            if (player.team === 'BLUE' && message.channel.id === gameData.gameRooms[1]) {
                 await gameModel.findOneAndUpdate(
                     {
                         serverId: message.guild.id,
@@ -45,7 +48,7 @@ module.exports = {
                     },
                 );
             }
-            if (DB.player.team === 'RED' && message.channel.id === gameData.gameRooms[2]) {
+            if (player.team === 'RED' && message.channel.id === gameData.gameRooms[2]) {
                 const respone = await gameModel.findOneAndUpdate(
                     {
                         serverId: message.guild.id,
@@ -80,14 +83,14 @@ module.exports = {
             
         if(cmd.startsWith('code') || args[0].startsWith('code')) {
 
-            if (DB.player.team !== gameData.curEncrypterTeam) return message.reply('Your team is not in encrypter round');
+            if (player.team !== gameData.curEncrypterTeam) return message.reply('Your team is not in encrypter round');
 
-            if (DB.player.team === 'BLUE' && gameData.blueTeam.curCodes.length) return message.channel.send(`<@${gameData.blueTeam.encrypterId}> has drew the codes already`);
-            else if (DB.player.team === 'RED' && gameData.redTeam.curCodes.length) return message.channel.send(`<@${gameData.redTeam.encrypterId}> has drew the codes already`);
+            if (player.team === 'BLUE' && gameData.blueTeam.curCodes.length) return message.channel.send(`<@${gameData.blueTeam.encrypterId}> has drew the codes already`);
+            else if (player.team === 'RED' && gameData.redTeam.curCodes.length) return message.channel.send(`<@${gameData.redTeam.encrypterId}> has drew the codes already`);
             
             const codeArray = drawCard(gameData.codes, 3);
             
-            if (DB.player.team === 'BLUE')
+            if (player.team === 'BLUE')
                 await gameModel.findOneAndUpdate(
                     {
                         serverId: message.guild.id,
@@ -100,7 +103,7 @@ module.exports = {
                     },
                 );
 
-            else if (DB.player.team === 'RED')
+            else if (player.team === 'RED')
                 await gameModel.findOneAndUpdate(
                     {
                         serverId: message.guild.id,

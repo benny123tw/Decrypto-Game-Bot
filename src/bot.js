@@ -18,7 +18,9 @@ require('dotenv').config();
 
 const has = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
 const sanitise = str => str.replace(/[^a-z0-9_-]/gi, '');
-const EN_US = require('../language/en-US');
+const EN_US = require('../language/js/en-US');
+const ZH_CN = require('../language/js/zh-CN');
+const ZH_TW = require('../language/js/zh-TW');
 
 // Logger
 const logLevels = {
@@ -83,7 +85,11 @@ const createBot = initialConfig => {
         commands: new discord.Collection(),
         DM_commands: new discord.Collection(),
         events: new discord.Collection(),
-        Language: new EN_US(),
+        Language: {
+            'en-US': new EN_US(), //default
+            'zh-CN': new ZH_CN(),
+            'zh-TW': new ZH_TW(),
+        }
     };
 
     /**

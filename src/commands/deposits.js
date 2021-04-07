@@ -5,11 +5,14 @@ module.exports = {
     aliases: ['dp', 'depo'],
     permissions: [],
     description: 'deposits money to bank',
-    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
+    async execute(options = {}, DB = {}) {
+        const { message, args, cmd, bot, logger, Discord, language } = options;
+        const { player, server} = DB;
+
         if (!args[0]) return message.reply(`Please enter money you want to deposits`);
         if (isNaN(args[0])) return message.reply('Please enter real number!');
 
-        if (DB.player.coins < args[0]) return message.reply(`Please enter valid amount!`);
+        if (player.coins < args[0]) return message.reply(`Please enter valid amount!`);
 
         const respone = await playerModel.findOneAndUpdate(
             {

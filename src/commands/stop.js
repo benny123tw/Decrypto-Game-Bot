@@ -6,8 +6,9 @@ module.exports = {
     aliases: ['end'],
     permissions: ["ADMINISTRATOR", "MANAGE_CHANNELS"],
     description: 'Quick stop the game and reset all elem includes players\' and server\'s',
-    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
-        const language = bot.Language;
+    async execute(options = {}, DB = {}) {
+        const { message, args, cmd, bot, logger, Discord, language } = options;
+        const { player, server } = DB;
 
         const optionsDefault = {
             gameMode: "normal",
@@ -68,8 +69,8 @@ module.exports = {
         );
 
         gameData.gameRoles.forEach(role => {
-            if (bot.client.guilds.cache.get(DB.server.serverID).roles.cache.get(role) != undefined)
-            bot.client.guilds.cache.get(DB.server.serverID).roles.cache.get(role).delete();
+            if (bot.client.guilds.cache.get(server.serverID).roles.cache.get(role) != undefined)
+            bot.client.guilds.cache.get(server.serverID).roles.cache.get(role).delete();
         });   
 
         gameData.gameRooms.forEach(room => {

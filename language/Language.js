@@ -1,6 +1,8 @@
+const defaultData = require('./json/en-us.json');
+const merge = require('../src/functions/deepMerge');
+
 class language {
-    constructor(data) {
-        this.language = data.language;
+    constructor(data = defaultData) {  
         this.color = {
             primary: '#e42643',
             blue: '#31c5eb',
@@ -8,48 +10,53 @@ class language {
         };
         
         this.error = {
+
             message: {
-                permission: data.error.message.permission, // Invalid Permissions or Missing Permission
-                execute: data.error.message.execute, // Wrong command
+                permission: '', // Invalid Permissions or Missing Permission
+                execute: '' , // Wrong command
             },     
     
             answer: { 
-                notDraw: data.error.answer.notDraw, // haven't draw key/code            
+                notDraw: '', // haven't draw key/code            
             },
     
             history: {
-                teamParams: (param) =>`cannot recognize \'${param}\' as a team`, // team param
-                description: data.error.history.description, // haven't draw
+                teamParams: (param) => this._teamParams(param), // team param
+                description: '', // haven't draw
             },
     
             keywords: {
-                add: data.error.keywords.add, // add syntax
-                del: data.error.keywords.del, // del syntax
+                add: '', // add syntax
+                del: '', // del syntax
                 update: { 
-                    param: data.error.keywords.update.param, // update syntax
-                    index: data.error.keywords.update.index, // invalid index
+                    param: '', // update syntax
+                    index: '', // invalid index
                 }
             },
     
             start: { 
-                rounds: data.error.start.rounds // rounds < 10
+                rounds: '' // rounds < 10
             },
     
             distribute: {
-                isNaN: data.error.distribute.isNaN, 
-                noNumber: data.error.distribute.isNaN
+                isNaN: '', 
+                noNumber: ''
             },
+
+            language: {
+                param: (param) => this._languageParam(param), // language param
+            }
             
         };
     
         this.answer = {
             cheat: { 
-                person: data.answer.cheat.person, // to cheater
-                channels: data.answer.cheat.channels, // to both channels
+                person: '', // to cheater
+                channels: '', // to both channels
             }, // Someone cheating
             wrong: (arr = []) => this._wrong(arr), // Wrong answer
             encrypterRound: (curEncrypterTeam) => this._encrypterRound(curEncrypterTeam), // Represent current team.
-            repeat: data.answer.repeat // Sending ans twice times above
+            repeat: '' // Sending ans twice times above
         };
     
         this.start = {
@@ -57,11 +64,11 @@ class language {
         };
     
         this.delete = {
-            onGame: data.delete.onGame // Delete channels when game running
+            onGame: '' // Delete channels when game running
         };
     
         this.stop = {
-            reset: data.stop.reset,
+            reset: '',
         };
     
         this.codeChecker = {
@@ -70,37 +77,37 @@ class language {
     
         this.distribute = {
             load: {
-                loading: data.distribute.load.loading, // Loading
-                completed: data.distribute.load.completed,
+                loading: '', // Loading
+                completed: '',
             },
         }
     
         this.embed = {
             score: {
                 color: this.color.primary, 
-                title: data.embed.score.title,
+                title: '',
                 fields: {
-                    blue: data.embed.score.fields.blue, // Team blue
-                    red: data.embed.score.fields.red, // Team Red
-                    intToken: data.embed.score.fields.intToken, // Interaction Token
-                    misToken: data.embed.score.fields.misToken, // Miscommunication Token 
+                    blue: '', // Team blue
+                    red: '', // Team Red
+                    intToken: '', // Interaction Token
+                    misToken: '', // Miscommunication Token 
                 }
             }, // scoreEmbed
     
             help: {
                 color: this.color.primary, 
-                title: data.embed.help.title,
-                description: data.embed.help.description,
+                title: '',
+                description: '',
             },
     
             descriptions: {
                 blue: {
                     color: this.color.blue, 
-                    title: data.embed.descriptions.blue.title,
+                    title: '',
                 },
                 red: {
                     color: this.color.red, 
-                    title: data.embed.descriptions.red.title,
+                    title: '',
                 }
             },
     
@@ -117,7 +124,7 @@ class language {
     
             random: {
                 color: this.color.primary,
-                title: data.embed.random.title,
+                title: '',
                 fields: {
                     number: (number) => this._randomFieldsNumber(number),
                 }
@@ -125,13 +132,13 @@ class language {
     
             normal: {
                 color: this.color.primary,
-                title: data.embed.normal.title,
+                title: '',
                 description: (blueTeamEmoji, redTeamEmoji) => this._normalDescription(blueTeamEmoji, redTeamEmoji),
             },
     
             result: {
                 color: this.color.primary,
-                title: data.embed.result.title,
+                title: '',
                 fields: {
                     blue: (blueTeamEmoji) => this._resultBlue(blueTeamEmoji),
                     red: (redTeamEmoji) => this._resultRed(redTeamEmoji),
@@ -140,10 +147,10 @@ class language {
     
             distribute: {
                 color: this.color.primary,
-                title: data.embed.distribute.title,
-                mode: data.embed.distribute.mode,
-                rounds: data.embed.distribute.rounds,
-                autoAssign: data.embed.distribute.autoAssign
+                title: '',
+                mode: '',
+                rounds: '',
+                autoAssign: ''
             },
     
             roundChecker: {
@@ -154,9 +161,14 @@ class language {
     
                 gameOver: {
                     color: (team) => this._roundCheckerColor(team),
-                    title: data.embed.roundChecker.gameOver.title,
+                    title: '',
                     description: (team) => this._roundCheckerDescription(team),
                 }
+            },
+
+            language: {
+                title: '', // new language
+                current: '', // curent language
             }
     
         };
@@ -164,9 +176,14 @@ class language {
         this.commands = {
             
         };
+
+        merge(this, data); // set default value to language
     }
 
+    _test = () => console.log(this);
     _teamParams = (param) =>`cannot recognize \'${param}\' as a team`;
+
+    _languageParam = (param) => `cannot recognize \'${param}\' as a language`
 
     _wrong = (arr = []) => `The codes are: **${arr.join(', ')}**`;
 

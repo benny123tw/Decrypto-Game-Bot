@@ -14,12 +14,28 @@ module.exports = {
     aliases: [],
     permissions: [],
     description: 'start the decrypto game! (normal / random)',
-    async execute({ message, args, cmd, bot, logger, Discord }, DB) {
-        const language = bot.Language;
+    /**
+     * 
+     * @param {Object} options
+     * @param {String} options.message
+     * @param {Array} options.args
+     * @param {String} options.cmd
+     * @param {Object} options.bot
+     * @param {String} options.logger
+     * @param {String} options.Discord
+     * @param {Object} options.language 
+     * @param {Object} DB 
+     * @param {Object} DB.player
+     * @param {Object} DB.server
+     */
+    async execute(options = {}, DB = {}) {
+        const { message, args, cmd, bot, logger, Discord, language } = options;
+        const { player, server } = DB;
+        
         /**
          *  init options object
          */
-        let options = {
+        let gameOptions = {
             gameMode: 'normal',
             autoAssign: true,
             rounds: 3,
@@ -30,22 +46,22 @@ module.exports = {
         // setting rounds. when over 10 set rounds to 3
         if (!isNaN(args[0])) {
             if (args[0] > 10) message.reply(language.error.start.rounds);
-            options.rounds = args[0] > 10 ? 3 : args[0];
+            gameOptions.rounds = args[0] > 10 ? 3 : args[0];
             args.shift();
         }
 
         // check if player set gamemode to random(default: normal)
-        if (args[0] === 'random') options.gameMode = 'random';
+        if (args[0] === 'random') gameOptions.gameMode = 'random';
 
         for (const arg of args) {
             if (!arg.startsWith('-')) continue;
-            if (arg.endsWith('auto') || arg.endsWith('a')) options.autoAssign = false;
+            if (arg.endsWith('auto') || arg.endsWith('a')) gameOptions.autoAssign = false;
         }
 
 
 
         /**
-         * get player Data from DB and handle Promise object.
+         * get game Data from DB and handle Promise object.
          */
         let gameData;
         await gameDB(bot, logger, message)
@@ -271,15 +287,15 @@ module.exports = {
 
         gameData = await gameModel.findOneAndUpdate(
             { serverId: message.guild.id },
-            { $set: { options: options } },{new: true}
+            { $set: { options: gameOptions } },{new: true}
         );
 
         // message.channel.send(`Game initialization completed.`);
         
-        if (options.gameMode === 'random') 
-            distribute.randomDistribute({ message, args, cmd, bot, logger, Discord }, gameData);
-        if (options.gameMode === 'normal')
-            distribute.normal({ message, args, cmd, bot, logger, Discord }, gameData);
+        if (gameOptions.gameMode === 'random') 
+            distribute.randomDistribute(options, gameData);
+        if (gameOptions.gameMode === 'normal')
+            distribute.normal(options, gameData);
         // distribute.test({ message, args, cmd, bot, logger, Discord }, gameData);
     },
 };

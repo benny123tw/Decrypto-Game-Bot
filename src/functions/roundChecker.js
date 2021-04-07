@@ -9,11 +9,13 @@ const Discord = require('discord.js');
 /**
  * passing server object and gameData, handle tie sitduation
  * caculate which team is winner
- * @param {Object} Server 
+ * @param {Object} options 
  * @param {Object} DB 
  * @param {Object} gameData 
  */
-const tie = async ({ message, bot, logger, Discord }, DB, gameData) => {
+const tie = async (options = {}, DB = {}, gameData) => {
+    const { message, args, cmd, bot, logger, Discord, language } = options;
+    const { player, server} = DB;
 
     let blueTeamScore = gameData.blueTeam.intToken - gameData.blueTeam.misToken;
     let redTeamScore = gameData.redTeam.intToken - gameData.redTeam.misToken;
@@ -28,7 +30,7 @@ const tie = async ({ message, bot, logger, Discord }, DB, gameData) => {
         await playerModel.findOneAndUpdate(
             { curServerId: message.guild.id, team: 'RED' }, 
             { $inc: { total_Games: 1, loses: 1}});
-        await reset(message, bot);
+        await reset(options, bot);
         return 1;
     }
 
@@ -42,18 +44,20 @@ const tie = async ({ message, bot, logger, Discord }, DB, gameData) => {
         await playerModel.findOneAndUpdate(
             { curServerId: message.guild.id, team: 'BLUE' }, 
             { $inc: { total_Games: 1, loses: 1}});
-        await reset(message, bot);
+        await reset(options);
         return 2;
     }
 
     if (blueTeamScore === redTeamScore) {
         logger.modules(`${chalk.cyanBright(`Tie!`)}`);
-        await reset(message, bot);
+        await reset(options);
         return 0;
     }
 }
 
-const reset = async (message, bot) => {
+const reset = async (options = {}) => {
+
+    const { message, bot, language } = options;
 
     let gameData = await gameModel.findOne({serverId: message.guild.id});
 
@@ -61,7 +65,7 @@ const reset = async (message, bot) => {
 
     if (gameData.curGames >= gameData.options.rounds) onGame = false;
     
-    if (onGame) roundMessage(message, gameData.curGames, bot.language);
+    if (onGame) roundMessage(options, gameData.curGames);
 
     //unpin all bot's pinned message in both game rooms
     message.client.channels.cache.get(gameData.gameRooms[1]).messages.fetchPinned()
@@ -130,7 +134,8 @@ const playBgm = async (guild, gameData) => {
     });
 }
 
-const roundMessage = (message, round, language) => {
+const roundMessage = (options = {}, round = 0) => {
+    const { message, bot, language } = options;
 
     const newRoundEmbed = new Discord.MessageEmbed()
     .setColor(language.embed.roundChecker.round.color)
@@ -143,8 +148,9 @@ const roundMessage = (message, round, language) => {
     message.client.channels.cache.get(gameData.gameRooms[rooms.redTeamTextChannel]).send(newRoundEmbed);
 }
 
-const gameOverMessage = (message, gameData, team, bot) => {
-    const language = bot.Language;
+const gameOverMessage = (options, gameData, team) => {
+    const { message, bot, language } = options;
+    
     const gameOverEmbed = new Discord.MessageEmbed()
     .setColor(language.embed.roundChecker.gameOver.color(team))
     .setTitle(language.embed.roundChecker.gameOver.title)
