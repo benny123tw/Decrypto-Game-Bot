@@ -1,127 +1,251 @@
 { 
-    "language": "zh-cn",
-    "error" : {
-        "message": {
-            "permission": "权限不足：", 
-            "execute": "输入的指令有误！"
+    "language": "en-cn",
+    "commands": {
+        "about": {
+            "description": "关于我",
+            "error": {},
+            "embed": {
+                "title": "关于我",
+                "fields": {
+                    "author": "作者",
+                    "version": "版本",
+                    "description": "描述",
+                    "descriptionValue": "关于版本" 
+                }
+            }
         },
-        "answer": { 
-            "notDraw": "有队伍尚未抽取关键词或当前加密者未抽取密码。"           
+        "answer": {
+            "description": "输入指令回答密码",
+            "error": {
+                "notDraw": "有队伍尚未抽取关键词或当前加密者未抽取密码。"
+            },
+            "embed": {
+                "score": {
+                    "title": "目前双方硬币",
+                    "fields": {
+                        "blue": "蓝",
+                        "red": "红",
+                        "intToken": "✅ 成功硬币",
+                        "misToken": "😥 失败硬币"
+                    }
+                }
+            },
+            "cheat": { 
+                "person": "为什么要作弊？ 小心把你骨灰都给杨咯"
+            },        
+            "repeat": "不要传送两次答案！"
+        },
+        "balance": {
+            "description": "显示用户余额",
+            "error": {},
+            "embed": {
+                "title": ""
+            }
+        },
+        "delete": {
+            "description": "快速删除游戏频道和身份组",
+            "error": {
+                "onGame": "不要在游戏进行中使用该指令！"
+            },
+            "embed": {
+                "title": ""
+            }
+        },
+        "deposits": {
+            "description": "存钱至银行",
+            "error": {
+                "money": "Please enter money you want to deposits",
+                "number": "Please enter real number!",
+                "valid": "Please enter valid amount!"
+            },
+            "embed": {
+                "title": ""
+            }
+        },
+        "draw": {
+            "description": "抽取密码或是关键词",
+            "error": {
+                "onGame": "你没有在游戏内！",
+                "channel": "请在游戏频道输入该指令！",
+                "isDrew": "已经抽过关键词了！",
+                "notEncrypter": "你不是当前的加密者！"
+            },
+            "embed": {
+                "key": {
+                    "title": "关键词"
+                },
+                "code": {
+                    "title": "密码"
+                }
+            }
+        },
+        "help": {
+            "description": "查看帮助",
+            "error": {},
+            "embed": {
+                "title": "所有指令"
+            }
         },
         "history": {
-            "description": "当前加密者尚未送出描述！"
+            "description": "列出所有队伍、指定队伍或当前的描述",
+            "error": {
+                "isDescribe": "当前加密者尚未发送描述。"
+            },
+            "embed": {
+                "blue": { 
+                    "title": "蓝队的描述"
+                },
+                "red": {
+                    "title": "红队的描述"
+                }
+            }
         },
         "keywords": {
-            "add": "请遵照语法：`$kw add <关键词> <序号(选择)>` `$kw add apple` `", 
-            "del": "请遵照语法： `$kw del <序号> 或 <关键词>` `$kw del apple`", 
-            "update": { 
-                "param": "请遵照语法： `$kw update <序号> <关键词>` `$kw update 10 apple`",
+            "description": "关键词库新增、修改、删除、更新，输入`$help keywords`获取更多帮助",
+            "error": {
+                "syntax": {
+                    "add": "请遵照语法：`$kw add <关键词> <序号(选择)>` `$kw add apple`",
+                    "del": "请遵照语法： `$kw del <序号> 或 <关键词>` `$kw del apple`",
+                    "update": "请遵照语法： `$kw update <序号> <关键词>` `$kw update 10 apple`"
+                },
                 "index": "请检查序号是否正确！"
-            }
-        },
-        "start": { 
-            "rounds": "无法设定超过10场，将自动设定为3场。" 
-        },
-        "distribute": {
-            "isNaN": "请输入数字！", 
-            "noNumber": "请输入有多少玩家加入！"
-        }
-    },
-    "answer" : {
-        "cheat": { 
-            "person": "为什么要作弊？ 小心把你骨灰都给杨咯",
-            "channels": " 这小b崽子作弊！\n密码重置，请加密者重新抽取。"
-        },        
-        "repeat": "不要传送两次答案！"
-    },
-    "start" : {   
-
-    },
-    "delete" : {
-        "onGame": "不要在游戏进行中使用该指令！"
-    },
-    "stop" : {
-        "reset": "所有的属性皆已重置。"
-    },
-    "codeChecker" : {
-
-    },
-    "distribute" : {
-        "load": {
-            "loading": "读取",
-            "completed": "读取完成！"
-        }        
-    },
-    "embed" : {
-        "score": {
-            "title": "目前双方硬币",
-            "fields": {
-                "blue": "蓝",
-                "red": "红",
-                "intToken": "✅ 成功硬币",
-                "misToken": "😥 失败硬币"
-            }
-        },
-
-        "help": {
-            "title": "所有指令",
-            "description": "前辍: "
-        },
-
-        "descriptions": {
-            "blue": { 
-                "title": "蓝队的描述"
             },
-            "red": {
-                "title": "红队的描述"
+            "embed": {
+                "title": ""
             }
         },
-
-        "scoreboard": {
-
-        },
-
-        "encrypter": {
-        },
-
-        "random": {
-            "title": "点赞来加入！",
-            "fields": {
-
-            }
-        },
-
-        "normal": {
-            "title": "选择你的队伍！"
-        },
-
-        "result": {
-            "title": "最终结果",
-            "fields": {
-
-            }
-        },
-
-        "distribute": {
-            "title": "设定选项",
-            "mode": "游戏模式",
-            "rounds": "回合数",
-            "autoAssign": "自动分配加密者"
-        },
-
-        "roundChecker": {
-            "round": {
-            },
-
-            "gameOver": {
-                "title": "游戏结束"
-            }
-        },
-
         "language": {
-            "title": "语言切换至中文（简体）",
-            "current": "当前语言是中文（简体）"
+            "description": "更改伺服器语言设定",
+            "error": {},
+            "embed": {
+                "setting": "语言切换至中文（简体）",
+                "current": "当前语言是中文（简体）"
+            }
+        },
+        "ping": {
+            "description": "查看ping值",
+            "error": {},
+            "embed": {
+                "title": ""
+            }
+        },
+        "report": {
+            "description": "举报玩家，并发起投票",
+            "error": {},
+            "embed": {
+                "title": ""
+            }
+        },
+        "scoreboard": {
+            "description": "查看生涯战绩",
+            "error": {},
+            "embed": {
+                "title": ""
+            }
+        },
+        "start": {
+            "description": "开始游戏",
+            "error": {
+                "rounds": "无法设定超过10场，将自动设定为3场。" 
+            },
+            "embed": {
+                "title": ""
+            }
+        },
+        "stop": {
+            "description": "快速暂停游戏，并重置所有属性设定",
+            "error": {},
+            "embed": {
+                "title": ""
+            },
+            "reset": "所有的属性皆已重置。"
+        },
+        "unpin": {
+            "description": "快速解除钉选内容",
+            "error": {},
+            "embed": {
+                "title": ""
+            }
         }
+    },
+    "functions": {
+        "codeChecker": {
+            "error": {},
+            "embed": {}
+        },
+        "deepMerge": {
+            "error": {},
+            "embed": {}
+        },
+        "delay": {
+            "error": {},
+            "embed": {}
+        },
+        "distribute": {
+            "error": {
+                "isNaN": "请输入数字！", 
+                "noNumber": "请输入有多少玩家加入！"
+            },
+            "embed": {
+                "encrypter": {
+                },
+                "random": {
+                    "title": "点赞来加入！",
+                    "fields": {
 
-    }
+                    }
+                },
+                "normal": {
+                    "title": "选择你的队伍！"
+                },
+                "result": {
+                    "title": "最终结果",
+                    "fields": {
+
+                    }
+                },
+                "distribute": {
+                    "title": "设定选项",
+                    "mode": "游戏模式",
+                    "rounds": "回合数",
+                    "autoAssign": "自动分配加密者"
+                }
+            },
+            "load": {
+                "loading": "读取",
+                "completed": "读取完成！"
+            }
+        },
+        "DM": {
+            "error": {},
+            "embed": {}
+        },
+        "gameDB": {
+            "error": {},
+            "embed": {}
+        },
+        "gameRooms": {
+            "error": {},
+            "embed": {}
+        },
+        "playerDB": {
+            "error": {},
+            "embed": {}
+        },
+        "roundChecker": {
+            "error": {},
+            "embed": {
+                "round": {
+                },    
+                "gameOver": {
+                    "title": "游戏结束"
+                }
+            }
+        },
+        "serverDB": {
+            "error": {},
+            "embed": {}
+        }
+    },
+    "DM": {}
 }

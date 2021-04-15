@@ -5,6 +5,7 @@ const fs = require('fs');
 const delay = require('../functions/delay');
 const gameModel = require('../models/gameSchema');
 const Discord = require('discord.js');
+const name = 'roundChecker';
 
 /**
  * passing server object and gameData, handle tie sitduation
@@ -16,6 +17,9 @@ const Discord = require('discord.js');
 const tie = async (options = {}, DB = {}, gameData) => {
     const { message, args, cmd, bot, logger, Discord, language } = options;
     const { player, server} = DB;
+    const lanData = language?.functions[name];
+    if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+        logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
 
     let blueTeamScore = gameData.blueTeam.intToken - gameData.blueTeam.misToken;
     let redTeamScore = gameData.redTeam.intToken - gameData.redTeam.misToken;
@@ -58,6 +62,9 @@ const tie = async (options = {}, DB = {}, gameData) => {
 const reset = async (options = {}) => {
 
     const { message, bot, language } = options;
+    const lanData = language?.functions[name];
+    if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+        logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
 
     let gameData = await gameModel.findOne({serverId: message.guild.id});
 
@@ -109,6 +116,21 @@ const reset = async (options = {}) => {
     )
     
     playBgm(message.guild, gameData);
+
+    if (!onGame) {
+        await playerModel.updateMany(
+            {
+                curServerId: message.guild.id,
+            },
+            {
+                $set: {
+                    team: '',
+                    onGame: false,
+                    curServerId: '',
+                }
+            }
+        );
+    }
 }
 
 const playBgm = async (guild, gameData) => {
@@ -136,10 +158,13 @@ const playBgm = async (guild, gameData) => {
 
 const roundMessage = (options = {}, round = 0) => {
     const { message, bot, language } = options;
+    const lanData = language?.functions[name];
+    if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+        logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
 
     const newRoundEmbed = new Discord.MessageEmbed()
-    .setColor(language.embed.roundChecker.round.color)
-    .setTitle(language.embed.roundChecker.round.title(round))
+    .setColor(lanData.embed.round.color)
+    .setTitle(lanData.embed.round.title(round))
     .setFooter(
         `${bot.config.footer}`,
     );
@@ -150,11 +175,14 @@ const roundMessage = (options = {}, round = 0) => {
 
 const gameOverMessage = (options, gameData, team) => {
     const { message, bot, language } = options;
+    const lanData = language?.functions[name];
+    if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+        logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
     
     const gameOverEmbed = new Discord.MessageEmbed()
-    .setColor(language.embed.roundChecker.gameOver.color(team))
-    .setTitle(language.embed.roundChecker.gameOver.title)
-    .setDescription(language.embed.roundChecker.gameOver.description(team))
+    .setColor(lanData.embed.gameOver.color(team))
+    .setTitle(lanData.embed.gameOver.title)
+    .setDescription(lanData.embed.gameOver.description(team))
     .setFooter(
         `${bot.config.footer}`,
     );
@@ -164,6 +192,7 @@ const gameOverMessage = (options, gameData, team) => {
 }
 
 module.exports = {
+    name: "roundChecker",
     tie,
     reset,
     playBgm,

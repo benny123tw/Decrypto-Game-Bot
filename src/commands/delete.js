@@ -1,5 +1,6 @@
 const gameDB = require('../functions/gameDB');
 const delay = require('../functions/delay');
+const chalk = require('chalk');
 
 module.exports = {
     name: 'delete',
@@ -9,6 +10,9 @@ module.exports = {
     async execute(options = {}, DB = {}) {
         const { message, args, cmd, bot, logger, Discord, language } = options;
         const { player, server} = DB;
+        const lanData = language?.commands[this.name];
+        if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+            logger.error(`Can't find ${chalk.redBright(`language.commands[\`${this.name}\`]}`)}`));
         /**
          * get player Data from DB and handle Promise object.
          */
@@ -17,7 +21,7 @@ module.exports = {
             .then(result => (gameData = result))
             .catch(err => console.log(err));
 
-        if (gameData.onGame) return message.reply(`Please do not use this command while game is still playing`);
+        if (gameData.onGame) return message.reply(lanData.error.onGame);
 
         // add delay to slow down the delete process
         // if ew remove the delay from here probably  will cause

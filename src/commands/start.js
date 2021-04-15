@@ -31,7 +31,10 @@ module.exports = {
     async execute(options = {}, DB = {}) {
         const { message, args, cmd, bot, logger, Discord, language } = options;
         const { player, server } = DB;
-        
+        const lanData = language?.commands[this.name];
+        if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+            logger.error(`Can't find ${chalk.redBright(`language.commands[\`${this.name}\`]}`)}`));
+
         /**
          *  init options object
          */
@@ -45,7 +48,7 @@ module.exports = {
 
         // setting rounds. when over 10 set rounds to 3
         if (!isNaN(args[0])) {
-            if (args[0] > 10) message.reply(language.error.start.rounds);
+            if (args[0] > 10) message.reply(lanData.error.rounds);
             gameOptions.rounds = args[0] > 10 ? 3 : args[0];
             args.shift();
         }

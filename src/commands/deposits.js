@@ -1,4 +1,5 @@
 const playerModel = require('../models/playerSchema');
+const channel = require('chalk');
 
 module.exports = {
     name: 'deposits',
@@ -8,11 +9,14 @@ module.exports = {
     async execute(options = {}, DB = {}) {
         const { message, args, cmd, bot, logger, Discord, language } = options;
         const { player, server} = DB;
+        const lanData = language?.commands[this.name];
+        if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+            logger.error(`Can't find ${chalk.redBright(`language.commands[\`${this.name}\`]}`)}`));
 
-        if (!args[0]) return message.reply(`Please enter money you want to deposits`);
-        if (isNaN(args[0])) return message.reply('Please enter real number!');
+        if (!args[0]) return message.reply(lanData.error.money);
+        if (isNaN(args[0])) return message.reply(lanData.error.number);
 
-        if (player.coins < args[0]) return message.reply(`Please enter valid amount!`);
+        if (player.coins < args[0]) return message.reply(lanData.error.valid);
 
         const respone = await playerModel.findOneAndUpdate(
             {
@@ -25,8 +29,6 @@ module.exports = {
                 },
             },
         );
-        return message.channel.send(
-            `${message.author.username}, you deposited \`${args[0]}\` **coins** to your bank!`,
-        );
+        return message.reply(lanData.depositMoney(args[0]));
     },
 };

@@ -6,7 +6,8 @@ module.exports = {
     aliases: ['d', 'dec'],
     permissions: [],
     description: 'Send Descriptions to channels via bot',
-    async execute({ message, args, cmd, bot, logger, Discord }, {user}) {
+    async execute({ message, args, cmd, bot, logger, Discord }, data) {
+        const { user } = data;
 
         if (!user.onGame) return message.reply('You are not in any games');
 

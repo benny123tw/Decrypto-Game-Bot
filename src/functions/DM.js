@@ -1,5 +1,6 @@
 const chalk = require('chalk');
 const playerModel = require('../models/playerSchema');
+const name = 'DM';
 
 /**
  * @param {Object} options
@@ -8,11 +9,15 @@ const playerModel = require('../models/playerSchema');
  * @param {Object} options.Discord
  * @param {Object} user 
  */
-const execute = async (options, user = {}) => {
+const execute = async (options, data = {}) => {
     const { message, bot, logger, Discord } = options;
+    const { user } = data;
+    
+    // const lanData = language?.functions[name];
+    // if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+    //     logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
     
     console.log(`${chalk.italic.cyanBright(message.author.username)} is sending DM to ${chalk.italic.cyanBright(bot.config.name)}\nContent: ${chalk.blueBright(message.content)}`)    
-    console.log(message.author)
     /**
      * Ignore all messages without our prefix.
      */
@@ -41,10 +46,10 @@ const execute = async (options, user = {}) => {
             logger: logger,
             Discord: Discord,
         };
-        command.execute(options, {user: user});
+        command.execute(options, data);
     } catch (error) {
         logger.error(chalk.red(error));
-        message.reply(language.error.message.execute);
+        message.reply(`Wrong Commands`);
     }
 }
 
@@ -75,6 +80,7 @@ const sendDMtoUser = async ({bot, Discord, logger, message}) => {
 }
 
 module.exports = {
+    name: "DM",
     execute,
     sendDMtoUser,
 }

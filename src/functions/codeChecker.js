@@ -1,9 +1,13 @@
 const gameModel = require('../models/gameSchema');
 const chalk = require('chalk');
+const name = 'codeChecker';
 
 const codeCorrectChecker = async (encrypter, options = {}, DB = {}) => {
     const { message, args, cmd, bot, logger, Discord, language } = options;
     const { player, server } = DB;
+    const lanData = language?.functions[name];
+    if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+        logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
 
     // BLUE TEAM
     if (player.team === 'BLUE') {
@@ -57,6 +61,10 @@ const codeCorrectChecker = async (encrypter, options = {}, DB = {}) => {
 const codeIncorrectChecker = async (encrypter, options = {}, DB = {}) => {
     const { message, args, cmd, bot, logger, Discord, language } = options;
     const { player, server } = DB;
+    const lanData = language?.functions[name];
+    if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+        logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
+
 
     if (player.team === 'BLUE') {
         console.log(`ans: BLUE`)
@@ -105,9 +113,9 @@ const codeIncorrectChecker = async (encrypter, options = {}, DB = {}) => {
 
     message.react(`❌`);
     if (gameData.curEncrypterTeam === 'BLUE')
-        message.channel.send(language.codeChecker.wrong(gameData.blueTeam.curCodes));
+        message.channel.send(lanData.wrong(gameData.blueTeam.curCodes));
     if (gameData.curEncrypterTeam === 'RED')
-        message.channel.send(language.codeChecker.wrong(gameData.redTeam.curCodes));
+        message.channel.send(lanData.wrong(gameData.redTeam.curCodes));
     return true;
 }
 

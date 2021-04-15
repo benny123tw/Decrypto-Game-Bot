@@ -88,7 +88,7 @@ module.exports = async (bot, Discord, logger, message) => {
                 }
             }
             if (invalidPerms.length) {
-                return message.channel.send(`${language.error.message.permission}\`${invalidPerms}\``);
+                return message.channel.send(`${language.events.message.error.permission}\`${invalidPerms}\``);
             }
         }
 
@@ -111,7 +111,7 @@ module.exports = async (bot, Discord, logger, message) => {
         command.execute(options, DB);
     } catch (error) {
         logger.error(chalk.red(error));
-        message.reply(language.error.message.execute);
+        message.reply(language.events.message.error.execute);
     }
 };
 

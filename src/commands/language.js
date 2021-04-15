@@ -8,10 +8,13 @@ module.exports = {
     description: 'Change server language setting',
     async execute(options) {
         const { message, args, bot, Discord, language } = options;
+        const lanData = language?.commands[this.name];
+        if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+            logger.error(`Can't find ${chalk.redBright(`language.commands[\`${this.name}\`]}`)}`));
 
         if (!args[0]) return message.channel.send(new Discord.MessageEmbed()
                         .setColor(language.color.primary)
-                        .setTitle(language.embed.language.current)
+                        .setTitle(lanData.embed.current)
                         .setFooter(bot.config.footer));
 
         const keys = Object.keys(languageArr)
@@ -22,15 +25,15 @@ module.exports = {
             }
 
         const lan_files = fs.readdirSync('./language/js'); // start from where index.js is 
-        if (!lan_files.includes(`${args[0]}.js`)) return message.reply(language.error.language.param(args[0]));
+        if (!lan_files.includes(`${args[0]}.js`)) return message.reply(lanData.param(args[0]));
         const serverData = await serverModel.findOneAndUpdate(
             {serverID: message.guild.id},
             { $set: { language: args[0]} }, {new: true});
         const newlanguage = bot.Language[serverData.language || 'en-US'];
 
         const lanEmbed = new Discord.MessageEmbed()
-            .setColor(newlanguage.color.primary)
-            .setTitle(newlanguage.embed.language.title)
+            .setColor(newlanguage.commands[this.name].embed.color)
+            .setTitle(newlanguage.commands[this.name].embed.setting)
             .setFooter(
                 bot.config.footer);
         message.channel.send(lanEmbed);

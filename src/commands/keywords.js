@@ -1,5 +1,6 @@
 const gameDB = require('../functions/gameDB');
 const gameModel = require('../models/gameSchema');
+const chalk = require('chalk');
 
 module.exports = {
     name: 'keywords',
@@ -9,6 +10,9 @@ module.exports = {
     async execute(options = {}, DB = {}) {
         const { message, args, cmd, bot, logger, Discord, language } = options;
         const { player, server } = DB;
+        const lanData = language?.commands[this.name];
+        if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+            logger.error(`Can't find ${chalk.redBright(`language.commands[\`${this.name}\`]}`)}`));
         
         /**
          * get player Data from DB and handle Promise object.
@@ -24,7 +28,7 @@ module.exports = {
          */
         const addAliases = ['add', 'a'];
         if (addAliases.includes(args[0])) {
-            if (!args[1]) return message.reply(`Please follow this syntax \`$kw a (keyword) index(option)\``);
+            if (!args[1]) return message.reply(lanData.error.syntax.add(server.prefix));
             
             if (args[2])
                 arr.splice(args[2], 0, args[1]);
@@ -52,7 +56,7 @@ module.exports = {
         const delAliases = ['delete', 'del', 'd'];
         if (delAliases.includes(args[0])) {
 
-            if (!args[1]) return message.reply(`Please follow this syntax \`$kw d (index || keyword)\``);
+            if (!args[1]) return message.reply(lanData.error.syntax.del(server.prefix));
             
             if (isNaN(args[1])) {
                 for (let i=0; i<arr.length; i++) {
@@ -105,10 +109,10 @@ module.exports = {
         if (updateAliases.includes(args[0])) {
 
             if (isNaN(args[1]) || !args[2]) 
-                return message.reply(`Please follow this syntax \`$kw u (index) (keyword)\``);
+                return message.reply(lanData.error.syntax.update(server.prefix));
 
             if (args[1] > gameData.keywords.length - 1)
-                return message.reply(`Please check your index number!`);
+                return message.reply(lanData.error.index);
             
             arr[args[1]-1] = args[2];
 

@@ -10,23 +10,26 @@ module.exports = {
     async execute(options = {}, DB = {}) {
         const { message, args, cmd, bot, logger, Discord, language } = options;
         const { player, server } = DB;
+        const lanData = language?.commands[this.name];
+        if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+            logger.error(`Can't find ${chalk.redBright(`language.commands[\`${this.name}\`]}`)}`));
 
         let gameData;
         await gameDB(bot, logger, message)
             .then(result => (gameData = result))
             .catch(err => console.log(err));
         
-        if (!gameData.onGame || !player.onGame) return message.reply(`You're not in game`);
-        if (!gameData.gameRooms.includes(message.channel.id)) return message.reply(`Please type in Game Room!(Under Decrypto category)`);
+        if (!gameData.onGame || !player.onGame) return message.reply(lanData.error.onGame);
+        if (!gameData.gameRooms.includes(message.channel.id)) return message.reply(lanData.error.channel);
 
         if(!args[0]) 
-            return message.reply(`Enter \`${bot.config.prefix}draw (key/code)\` to execute the command.`);
+            return message.reply(lanData.error.syntax(server.prefix));
 
         if(cmd.startsWith('key') || args[0].startsWith('key')) {
 
             // check if keywords have been drew
-            if (player.team === 'BLUE' && gameData.blueTeam.keywords.length) return message.reply(`Keywords have been drew!`); 
-            else if (player.team === 'RED' && gameData.redTeam.keywords.length) return message.reply(`Keywords have been drew!`); 
+            if (player.team === 'BLUE' && gameData.blueTeam.keywords.length) return message.reply(lanData.error.isDrew); 
+            else if (player.team === 'RED' && gameData.redTeam.keywords.length) return message.reply(lanData.error.isDrew); 
 
             let keyString = '', count = 1;
             let keyArray = drawCard(gameData.keywords, 4);
@@ -63,11 +66,11 @@ module.exports = {
             
             const updateGameData = await gameModel.findOne({serverId: message.guild.id});
             const keyEmbed = new Discord.MessageEmbed()
-                .setColor('#e42643')
-                .setTitle('KeyWords')
+                .setColor(lanData.embed.key.color)
+                .setTitle(lanData.embed.key.title)
                 .addFields(
                     { name: '\u200B', value: '\u200B' },
-                    { name: `Game ${updateGameData.curGames}`, value: `${keyString}` },
+                    { name: lanData.drawRounds(updateGameData.curGames), value: `${keyString}` },
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(
@@ -78,15 +81,15 @@ module.exports = {
 
         // if autoAssign is true check player id is eqaul to specified player id
         if (gameData.options.autoAssign && gameData.blueTeam.encrypterId !== message.author.id
-            && gameData.redTeam.encrypterId !== message.author.id) return message.reply('You are not current encrypter!');
+            && gameData.redTeam.encrypterId !== message.author.id) return message.reply(lanData.error.notEncrypter);
 
             
         if(cmd.startsWith('code') || args[0].startsWith('code')) {
 
             if (player.team !== gameData.curEncrypterTeam) return message.reply('Your team is not in encrypter round');
 
-            if (player.team === 'BLUE' && gameData.blueTeam.curCodes.length) return message.channel.send(`<@${gameData.blueTeam.encrypterId}> has drew the codes already`);
-            else if (player.team === 'RED' && gameData.redTeam.curCodes.length) return message.channel.send(`<@${gameData.redTeam.encrypterId}> has drew the codes already`);
+            if (player.team === 'BLUE' && gameData.blueTeam.curCodes.length) return message.channel.send(lanData.error.drawCode(gameData.blueTeam.encrypterId));
+            else if (player.team === 'RED' && gameData.redTeam.curCodes.length) return message.channel.send(lanData.error.drawCode(gameData.redTeam.encrypterId));
             
             const codeArray = drawCard(gameData.codes, 3);
             
@@ -117,11 +120,11 @@ module.exports = {
                 );
             const updateGameData = await gameModel.findOne({serverId: message.guild.id});
             const codeEmbed = new Discord.MessageEmbed()
-                .setColor('#e42643')
-                .setTitle('Codes')
+                .setColor(lanData.embed.code.color)
+                .setTitle(lanData.embed.code.title)
                 .addFields(
                     { name: '\u200B', value: '\u200B' },
-                    { name: `Game ${updateGameData.curGames}`, value: `${codeArray.join(', ')}` },
+                    { name: lanData.drawRounds(updateGameData.curGames), value: `${codeArray.join(', ')}` },
                     { name: '\u200B', value: '\u200B' },
                 )
                 .setFooter(

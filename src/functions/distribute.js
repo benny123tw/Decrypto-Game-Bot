@@ -1,6 +1,8 @@
 const playerModel = require('../models/playerSchema');
 const gameModel = require('../models/gameSchema');
 const {rooms, teamObj} =require('../functions/gameRooms');
+const chalk = require('chalk');
+const name = 'distribute';
 
 /**
  * shuffle the array using random pointer
@@ -31,6 +33,9 @@ const shuffle = function shuffleArray(array) {
  */
 const autoAssign = async (options = {}) => {
     const { message, bot, Discord, language } = options;
+    const lanData = language?.functions[name];
+    if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+        logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
     
     let gameData = await gameModel.findOne({serverId: message.guild.id});
 
@@ -40,9 +45,9 @@ const autoAssign = async (options = {}) => {
                 {$set:{"blueTeam.encrypterId": gameData.blueTeam.encryptersList[0]}}, {new: true})
                 .then(async result =>{
                     const bt_encrypter = new Discord.MessageEmbed()
-                    .setColor(language.embed.encrypter.color(gameData.curEncrypterTeam))
-                    .setTitle(language.embed.encrypter.title(gameData.curEncrypterTeam))
-                    .setDescription(language.embed.encrypter.description(message.guild.members.cache.get(result.blueTeam.encrypterId).user.username))
+                    .setColor(lanData.embed.encrypter.color(gameData.curEncrypterTeam))
+                    .setTitle(lanData.embed.encrypter.title(gameData.curEncrypterTeam))
+                    .setDescription(lanData.embed.encrypter.description(message.guild.members.cache.get(result.blueTeam.encrypterId).user.username))
                     .setThumbnail(message.guild.members.cache.get(result.blueTeam.encrypterId).user.avatarURL())
                     .setFooter(
                         `${bot.config.footer}`
@@ -63,9 +68,9 @@ const autoAssign = async (options = {}) => {
                 {$set:{"redTeam.encrypterId": gameData.redTeam.encryptersList[0]}}, {new: true})
                 .then(async result =>{
                     const rt_encrypter = new Discord.MessageEmbed()
-                    .setColor(language.embed.encrypter.color(gameData.curEncrypterTeam))
-                    .setTitle(language.embed.encrypter.title(gameData.curEncrypterTeam))
-                    .setDescription(language.embed.encrypter.description(message.guild.members.cache.get(result.redTeam.encrypterId).user.username))
+                    .setColor(lanData.embed.encrypter.color(gameData.curEncrypterTeam))
+                    .setTitle(lanData.embed.encrypter.title(gameData.curEncrypterTeam))
+                    .setDescription(lanData.embed.encrypter.description(message.guild.members.cache.get(result.redTeam.encrypterId).user.username))
                     .setThumbnail(message.guild.members.cache.get(result.redTeam.encrypterId).user.avatarURL())
                     .setFooter(
                         `${bot.config.footer}`
@@ -98,10 +103,13 @@ const autoAssign = async (options = {}) => {
  */
 const randomDistribute =  async (options, gameData) => {
     const { message, args, cmd, bot, logger, Discord, language } = options;
+    const lanData = language?.functions[name];
+    if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+        logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
 
     // check arguments 2 is number
-    if (isNaN(args[1])) return message.reply(language.error.distribute.isNaN);
-    if (!args[1]) return message.reply(language.error.distribute.noNumber);
+    if (isNaN(args[1])) return message.reply(lanData.error.isNaN);
+    if (!args[1]) return message.reply(lanData.error.noNumber);
 
     // init settings 
     const reactionFilter = (reaction, user) => reaction.emoji.name === '🤣';
@@ -112,10 +120,10 @@ const randomDistribute =  async (options, gameData) => {
 
     // join embed settings
     const joinEmbed = new Discord.MessageEmbed()
-    .setColor(language.embed.random.color)
-    .setTitle(language.embed.random.title)
+    .setColor(lanData.embed.random.color)
+    .setTitle(lanData.embed.random.title)
     .addFields(
-        { name: language.embed.random.fields.number(args[1]), value: `none`, inline: false },
+        { name: lanData.embed.random.fields.number(args[1]), value: `none`, inline: false },
         { name: '\u200B', value: '\u200B' },
     )
     .setFooter(
@@ -143,12 +151,12 @@ const randomDistribute =  async (options, gameData) => {
                 let embedLikeField = Object.assign({}, joinEmbed.fields[0]);
                 embedLikeField.value = mReaction.users.cache.filter(user => !user.bot)
                     .map(user => user.username);
-                embedLikeField.name = language.embed.random.fields.number(args[1] - embedLikeField.value.length);
+                embedLikeField.name = lanData.embed.random.fields.number(args[1] - embedLikeField.value.length);
 
                 // new embed join the new likefield
                 const newEmbed = new Discord.MessageEmbed()
-                .setColor(language.embed.random.color)
-                .setTitle(language.embed.random.title)
+                .setColor(lanData.embed.random.color)
+                .setTitle(lanData.embed.random.title)
                 .addFields(
                     embedLikeField,
                     { name: '\u200B', value: '\u200B' },
@@ -170,12 +178,12 @@ const randomDistribute =  async (options, gameData) => {
                     embedLikeField.value = mReaction.users.cache.filter(user => !user.bot)
                     .map(user => user.username);
                 }
-                embedLikeField.name = language.embed.random.fields.number(args[1] - embedLikeField.value.length);
+                embedLikeField.name = lanData.embed.random.fields.number(args[1] - embedLikeField.value.length);
 
                 // new embed join the new likefield
                 const newEmbed = new Discord.MessageEmbed()
-                .setColor(language.embed.random.color)
-                .setTitle(language.embed.random.title)
+                .setColor(lanData.embed.random.color)
+                .setTitle(lanData.embed.random.title)
                 .addFields(
                     embedLikeField,
                     { name: '\u200B', value: '\u200B' },
@@ -258,11 +266,11 @@ const randomDistribute =  async (options, gameData) => {
                 });
 
                 const newEmbed = new Discord.MessageEmbed()
-                .setColor(language.embed.result.color)
-                .setTitle(language.embed.result.title)
+                .setColor(lanData.embed.result.color)
+                .setTitle(lanData.embed.result.title)
                 .addFields(
-                    { name: language.embed.result.fields.blue(blueTeamEmoji), value: `${blueTeam.join('\n') || `none`}` },
-                    { name: language.embed.result.fields.blue(redTeamEmoji), value: `${redTeam.join('\n') || `none`}` },
+                    { name: lanData.embed.result.fields.blue(blueTeamEmoji), value: `${blueTeam.join('\n') || `none`}` },
+                    { name: lanData.embed.result.fields.blue(redTeamEmoji), value: `${redTeam.join('\n') || `none`}` },
                 )
                 .setFooter(
                     `${bot.config.footer}`,
@@ -277,33 +285,36 @@ const randomDistribute =  async (options, gameData) => {
     /**
      * Sending `reset codes` message to both channels and show the current tokens each team
      */
-     message.client.channels.cache.get(gameData.gameRooms[1]).send(language.start.encrypterRound(gameData.curEncrypterTeam));
-     message.client.channels.cache.get(gameData.gameRooms[2]).send(language.start.encrypterRound(gameData.curEncrypterTeam));    
+     message.client.channels.cache.get(gameData.gameRooms[1]).send(lanData.encrypterRound(gameData.curEncrypterTeam));
+     message.client.channels.cache.get(gameData.gameRooms[2]).send(lanData.encrypterRound(gameData.curEncrypterTeam));    
 }
 
 const delay = require('../functions/delay');
 const loading = async (options = {}, gameOptions, embedMessage) => {
     const { message, args, cmd, bot, logger, Discord, language } = options;
+    const lanData = language?.functions[name];
+    if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+        logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
 
     let st = '';
-    message.channel.send(language.distribute.load.loading).then( async msg => {
+    message.channel.send(lanData.load.loading).then( async msg => {
         for (let i = 0; i <4; i++) {
             st += '..'
             if (i % 3 === 0) st = '';
-            msg.edit(`${language.distribute.load.loading}${st}`);
+            msg.edit(`${lanData.load.loading}${st}`);
             await delay(500);
         }
-        msg.edit(language.distribute.load.completed);
+        msg.edit(lanData.load.completed);
         await delay(500);
         msg.channel.send(embedMessage);
 
         const optionsEmbed = new Discord.MessageEmbed()
-                .setColor(language.embed.distribute.color)
-                .setTitle(language.embed.distribute.title)
+                .setColor(lanData.embed.distribute.color)
+                .setTitle(lanData.embed.distribute.title)
                 .addFields(
-                    { name: language.embed.distribute.mode, value: gameOptions.gameMode, inLine: true},
-                    { name: language.embed.distribute.rounds, value: gameOptions.rounds, inLine: true},
-                    { name: language.embed.distribute.autoAssign, value: gameOptions.autoAssign, inLine: true},
+                    { name: lanData.embed.distribute.mode, value: gameOptions.gameMode, inLine: true},
+                    { name: lanData.embed.distribute.rounds, value: gameOptions.rounds, inLine: true},
+                    { name: lanData.embed.distribute.autoAssign, value: gameOptions.autoAssign, inLine: true},
                 )
         msg.channel.send(optionsEmbed);
     });
@@ -328,6 +339,9 @@ const deleteMessage = (message) => {
  */
 const normal = async (options = {}, gameData) => {
     const { message, args, cmd, bot, logger, Discord, language } = options;
+    const lanData = language?.functions[name];
+    if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+        logger.error(`Can't find ${chalk.redBright(`language.functions[\`${name}\`]}`)}`));
     
     const channel = message.channel.id;
     const blueTeamRole = gameData.gameRoles[0];
@@ -337,9 +351,9 @@ const normal = async (options = {}, gameData) => {
     const redTeamEmoji = '🔸';
 
     let embed = new Discord.MessageEmbed()
-        .setColor(language.embed.normal.color)
-        .setTitle(language.embed.normal.title)
-        .setDescription(language.embed.normal.description(blueTeamEmoji, redTeamEmoji));
+        .setColor(lanData.embed.normal.color)
+        .setTitle(lanData.embed.normal.title)
+        .setDescription(lanData.embed.normal.description(blueTeamEmoji, redTeamEmoji));
 
     let messageEmbed;
     await message.channel.send(embed)
@@ -440,11 +454,11 @@ const normal = async (options = {}, gameData) => {
         redTeamID = shuffle(redTeamID);
 
         const newEmbed = new Discord.MessageEmbed()
-        .setColor(language.embed.result.color)
-        .setTitle(language.embed.result.title)
+        .setColor(lanData.embed.result.color)
+        .setTitle(lanData.embed.result.title)
         .addFields(
-            { name: language.embed.result.fields.blue(blueTeamEmoji), value: `${blueTeam.join('\n') || `none`}` },
-            { name: language.embed.result.fields.red(redTeamEmoji), value: `${redTeam.join('\n') || `none`}` },
+            { name: lanData.embed.result.fields.blue(blueTeamEmoji), value: `${blueTeam.join('\n') || `none`}` },
+            { name: lanData.embed.result.fields.red(redTeamEmoji), value: `${redTeam.join('\n') || `none`}` },
             { name: '\u200B', value: '\u200B' },
         )
         .setFooter(
@@ -502,11 +516,12 @@ const normal = async (options = {}, gameData) => {
     /**
          * Sending `reset codes` message to both channels and show the current tokens each team
          */
-     message.client.channels.cache.get(gameData.gameRooms[1]).send(language.start.encrypterRound(gameData.curEncrypterTeam));
-     message.client.channels.cache.get(gameData.gameRooms[2]).send(language.start.encrypterRound(gameData.curEncrypterTeam));    
+     message.client.channels.cache.get(gameData.gameRooms[1]).send(lanData.encrypterRound(gameData.curEncrypterTeam));
+     message.client.channels.cache.get(gameData.gameRooms[2]).send(lanData.encrypterRound(gameData.curEncrypterTeam));    
 };
 
 module.exports = {
+    name: "distribute",
     normal,
     randomDistribute,
     autoAssign,

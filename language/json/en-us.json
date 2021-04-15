@@ -1,127 +1,260 @@
 { 
     "language": "en-us",
-    "error" : {
+    "events": {
         "message": {
-            "permission": "Missing Permissions: ", 
-            "execute": "There was an error trying to execute that command!"
+            "error": { 
+                "permission": "Missing Permissions: ", 
+                "execute": "There was an error trying to execute that command!"
+            }
+        }
+    },
+    "commands": {
+        "about": {
+            "description": "About me",
+            "error": {},
+            "embed": {
+                "title": "About Me",
+                "fields": {
+                    "author": "Author",
+                    "version": "Version",
+                    "description": "Description",
+                    "descriptionValue": "" 
+                }
+            }
         },
-        "answer": { 
-            "notDraw": "Some team haven't draw codes/keywords yet"           
+        "answer": {
+            "description": "",
+            "error": {
+                "notDraw": "Some team haven't draw codes/keywords yet"
+            },
+            "embed": {
+                "score": {
+                    "title": "Current Tokens",
+                    "fields": {
+                        "blue": "Blue",
+                        "red": "Red",
+                        "intToken": "✅ Int Token",
+                        "misToken": "😥 Mis Token"
+                    }
+                }
+            },
+            "cheat": {
+                "channels": " cheating!!\nCodes have been reset!",
+                "person": "Why you cheating huh?"    
+            },
+            "repeat": "Don't send the answer 2 times"
+        },
+        "balance": {
+            "description": "Show player balance",
+            "error": {},
+            "embed": {
+                "title": ""
+            }
+        },
+        "delete": {
+            "description": "Quick delete game rooms and roles",
+            "error": {
+                "onGame": "Please do not use this command while game is still playing"
+            },
+            "embed": {
+                "title": ""
+            }
+        },
+        "deposits": {
+            "description": "Deposits money to bank",
+            "error": {
+                "money": "Please enter money you want to deposits",
+                "number": "Please enter real number!",
+                "valid": "Please enter valid amount!"
+            },
+            "embed": {
+                "title": ""
+            }
+        },
+        "draw": {
+            "description": "Draw codes or keywords",
+            "error": {
+                "onGame": "You're not in game!",
+                "channel": "Please type in Game Channels!(Under Decrypto category)",
+                "isDrew": "Keywords have been drew!",
+                "notEncrypter": "You're not current encrypter!"
+            },
+            "embed": {
+                "key": {
+                    "title": "Keywords"
+                },
+                "code": {
+                    "title": "Codes"
+                }
+            }
+        },
+        "help": {
+            "description": "Help command",
+            "error": {},
+            "embed": {
+                "title": "All Commands"
+            }
         },
         "history": {
-            "description": "Current encrypter haven't send descriptions yet."
+            "description": "List descriptions history [red/blue] or list current descriptions",
+            "error": {
+                "isDescribe": "Current encrypter haven't send descriptions yet."
+            },
+            "embed": {
+                "blue": { 
+                    "title": "Blue Team Descriptions"
+                },
+                "red": {
+                    "title": "Red Team Descriptions"
+                }
+            }
         },
         "keywords": {
-            "add": "Please follow this syntax `$kw a (keyword) index(option)`", 
-            "del": "Please follow this syntax `$kw d (index || keyword)`", 
-            "update": { 
-                "param": "Please follow this syntax `$kw u (index) (keyword)`",
+            "description": "Keywords Query, Update, Delete, Add, `$help keywords` for more help",
+            "error": {
+                "syntax": {
+                    "add": "Please follow this syntax `$kw a (keyword) index(option)`",
+                    "del": "Please follow this syntax `$kw d (index || keyword)`",
+                    "update": "Please follow this syntax `$kw u (index) (keyword)`"
+                },
                 "index": "Please check your index number!"
-            }
-        },
-        "start": { 
-            "rounds": "Cannot set over 10 rounds. Rounds set to 3 now." 
-        },
-        "distribute": {
-            "isNaN": "Please Enter the number.", 
-            "noNumber": "Please Enter how many players will join!"
-        }
-    },
-    "answer" : {
-        "cheat": { 
-            "person": "Why you cheating huh?",
-            "channels": " cheating!!\nCodes have been reset!"
-        },        
-        "repeat": "Don't send the answer 2 times"
-    },
-    "start" : {   
-
-    },
-    "delete" : {
-        "onGame": "Please do not use this command while game is still playing"
-    },
-    "stop" : {
-        "reset": "All elem has been reset."
-    },
-    "codeChecker" : {
-
-    },
-    "distribute" : {
-        "load": {
-            "loading": "Loading",
-            "completed": "Loading Completed!"
-        }        
-    },
-    "embed" : {
-        "score": {
-            "title": "Current Tokens",
-            "fields": {
-                "blue": "Blue",
-                "red": "Red",
-                "intToken": "✅ Int Token",
-                "misToken": "😥 Mis Token"
-            }
-        },
-
-        "help": {
-            "title": "All Commands",
-            "description": "Prefix: "
-        },
-
-        "descriptions": {
-            "blue": { 
-                "title": "Blue Team Descriptions"
             },
-            "red": {
-                "title": "Red Team Descriptions"
+            "embed": {
+                "title": ""
             }
         },
-
-        "scoreboard": {
-
-        },
-
-        "encrypter": {
-        },
-
-        "random": {
-            "title": "React to join!",
-            "fields": {
-
-            }
-        },
-
-        "normal": {
-            "title": "Choose your TEAM!"
-        },
-
-        "result": {
-            "title": "Final Result",
-            "fields": {
-
-            }
-        },
-
-        "distribute": {
-            "title": "Options",
-            "mode": "Game Mode",
-            "rounds": "Rounds",
-            "autoAssign": "Auto Assign"
-        },
-
-        "roundChecker": {
-            "round": {
-            },
-
-            "gameOver": {
-                "title": "Game Over"
-            }
-        },
-
         "language": {
-            "title": "Language set to English(US)",
-            "current": "Current language is English(US)"
+            "description": "Change server language setting",
+            "error": {},
+            "embed": {
+                "setting": "Language set to English(US)",
+                "current": "Current language is English(US)"
+            }
+        },
+        "ping": {
+            "description": "Ping! Pong?",
+            "error": {},
+            "embed": {
+                "title": ""
+            }
+        },
+        "report": {
+            "description": "Report someone to bot and launch a vote",
+            "error": {},
+            "embed": {
+                "title": ""
+            }
+        },
+        "scoreboard": {
+            "description": "Show the career",
+            "error": {},
+            "embed": {
+                "title": ""
+            }
+        },
+        "start": {
+            "description": "Start the decrypto game! (normal / random)",
+            "error": {
+                "rounds": "Cannot set over 10 rounds. Rounds set to 3 now." 
+            },
+            "embed": {
+                "title": ""
+            }
+        },
+        "stop": {
+            "description": "Quick stop the game and reset all elem includes players' and server's",
+            "error": {},
+            "embed": {
+                "title": ""
+            },
+            "reset": "All elem has been reset."
+        },
+        "unpin": {
+            "description": "Quick unpin the message",
+            "error": {},
+            "embed": {
+                "title": ""
+            }
         }
+    },
+    "functions": {
+        "codeChecker": {
+            "error": {},
+            "embed": {}
+        },
+        "deepMerge": {
+            "error": {},
+            "embed": {}
+        },
+        "delay": {
+            "error": {},
+            "embed": {}
+        },
+        "distribute": {
+            "error": {
+                "isNaN": "Please Enter the number.", 
+                "noNumber": "Please Enter how many players will join!"
+            },
+            "embed": {
+                "encrypter": {
+                },
+                "random": {
+                    "title": "React to join!",
+                    "fields": {
 
-    }
+                    }
+                },
+                "normal": {
+                    "title": "Choose your TEAM!"
+                },
+                "result": {
+                    "title": "Final Result",
+                    "fields": {
+
+                    }
+                },
+                "distribute": {
+                    "title": "Options",
+                    "mode": "Game Mode",
+                    "rounds": "Rounds",
+                    "autoAssign": "Auto Assign"
+                }
+            },
+            "load": {
+                "loading": "Loading",
+                "completed": "Loading Completed!"
+            }
+        },
+        "DM": {
+            "error": {},
+            "embed": {}
+        },
+        "gameDB": {
+            "error": {},
+            "embed": {}
+        },
+        "gameRooms": {
+            "error": {},
+            "embed": {}
+        },
+        "playerDB": {
+            "error": {},
+            "embed": {}
+        },
+        "roundChecker": {
+            "error": {},
+            "embed": {
+                "round": {
+                },    
+                "gameOver": {
+                    "title": "Game Over"
+                }
+            }
+        },
+        "serverDB": {
+            "error": {},
+            "embed": {}
+        }
+    },
+    "DM": {}
 }

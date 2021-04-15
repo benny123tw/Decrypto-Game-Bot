@@ -1,5 +1,6 @@
 const gameModel = require('../models/gameSchema');
 const {teamObj} = require('../functions/gameRooms');
+const chalk = require('chalk');
 
 module.exports = {
     name: 'history',
@@ -9,12 +10,15 @@ module.exports = {
     async execute(options = {}, DB = {}) {
         const { message, args, cmd, bot, logger, Discord, language } = options;
         const { player, server } = DB;
+        const lanData = language?.commands[this.name];
+        if (lanData === undefined) return ( message.reply('language pack loading failed.'),
+            logger.error(`Can't find ${chalk.redBright(`language.commands[\`${this.name}\`]}`)}`));
 
-        if ((args[0] !== 'red' && args[0] !== 'blue') && args.length !== 0) return message.reply(language.error.history.teamParams(args[0]));
+        if ((args[0] !== 'red' && args[0] !== 'blue') && args.length !== 0) return message.reply(lanData.teamParams(args[0]));
 
         let gameData = await gameModel.findOne({serverId: message.guild.id});
 
-        if (cmd === 'current' && !gameData[teamObj[gameData.curEncrypterTeam].name].isDescribe) return message.reply(language.error.history.description);
+        if (cmd === 'current' && !gameData[teamObj[gameData.curEncrypterTeam].name].isDescribe) return message.reply(lanData.error.isDescribe);
 
         /**
          *  list current descriptions if current encrypter has sent it
@@ -51,8 +55,8 @@ module.exports = {
 
         //create embed 
         const bt_descriptionEmbed = new Discord.MessageEmbed()
-                .setColor(language.embed.descriptions.blue.color) //lightblue hex code
-                .setTitle(language.embed.descriptions.blue.title)
+                .setColor(lanData.embed.blue.color) //lightblue hex code
+                .setTitle(lanData.embed.blue.title)
                 .addFields(
                     { name: '1', value: `${descriptions.blueTeam._1.join(', ')  || 'none'}`},
                     { name: '2', value: `${descriptions.blueTeam._2.join(', ')  || 'none'}`},
@@ -65,8 +69,8 @@ module.exports = {
 
         //create embed 
         const rt_descriptionEmbed = new Discord.MessageEmbed()
-            .setColor(language.embed.descriptions.red.color) //lightred hex code
-            .setTitle(language.embed.descriptions.red.title)
+            .setColor(lanData.embed.red.color) //lightred hex code
+            .setTitle(lanData.embed.red.title)
             .addFields(
                 { name: '1', value: `${descriptions.redTeam._1.join(', ')  || 'none'}`},
                 { name: '2', value: `${descriptions.redTeam._2.join(', ')  || 'none'}`},

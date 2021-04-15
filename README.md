@@ -36,7 +36,10 @@ Playing decrypto board game on discord!
 	- [x] Bank system (deposite and draw money)
 	- [x] Player balance
 	- [ ] Bet
-- [ ] Language
+- [x] Language (extensible language)
+  - [x] en-us
+  - [x] zh-cn
+  - [x] zh-tw
 
 ## Requirements
 
